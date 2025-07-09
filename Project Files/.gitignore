@@ -1,5 +1,0 @@
-# Ignore environment files
-.env
-
-# Ignore API keys in Python
-gen_flashcards.py
