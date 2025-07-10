@@ -17,11 +17,15 @@ import uuid
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 import os
-from dotenv import load_dotenv
-load_dotenv()
+# signlog.py
+SENDGRID_API_KEY = st.secrets["sendgrid"]["SENDGRID_API_KEY"]
+SENDER_EMAIL = st.secrets["sendgrid"]["SENDER_EMAIL"]
+import os
+import streamlit as st
 
-SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")  # 🔐 Securely loaded
-SENDER_EMAIL = os.getenv("SENDER_EMAIL")
+os.environ["TOGETHER_API_KEY"] = st.secrets["together"]["TOGETHER_API_KEY"]
+os.environ["OPENAI_API_KEY"] = st.secrets["openai"]["OPENAI_API_KEY"]
+
 def generate_otp():
     return str(uuid.uuid4())[:6].upper()  # 6-char OTP
 
