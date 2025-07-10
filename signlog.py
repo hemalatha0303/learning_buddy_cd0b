@@ -48,16 +48,15 @@ def send_otp_email(to_email, otp):
         return False
 import psycopg2
 import streamlit as st
-
 def get_connection():
-    db = st.secrets["database"]  # ✅ move this inside the function
+    db = st.secrets["database"]
     return psycopg2.connect(
         host=db["host"],
         port=db["port"],
-        dbname=db["dbname"],
+        database=db["dbname"],
         user=db["user"],
         password=db["password"],
-        sslmode="require"  # 🔒 this line is crucial
+        sslmode="require"
     )
 def send_password_email(to_email, password):
     message = Mail(
