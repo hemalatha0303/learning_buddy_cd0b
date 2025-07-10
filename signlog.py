@@ -24,8 +24,6 @@ import os
 import streamlit as st
 
 os.environ["TOGETHER_API_KEY"] = st.secrets["together"]["TOGETHER_API_KEY"]
-os.environ["OPENAI_API_KEY"] = st.secrets["openai"]["OPENAI_API_KEY"]
-
 def generate_otp():
     return str(uuid.uuid4())[:6].upper()  # 6-char OTP
 
