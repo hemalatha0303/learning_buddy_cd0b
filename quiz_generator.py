@@ -5,9 +5,9 @@ import streamlit as st
 from langchain.schema import HumanMessage
 from langchain_together import ChatTogether
 
-# Fix: Dummy key to satisfy OpenAI dependency
-os.environ["OPENAI_API_KEY"] = st.secrets["together"]["TOGETHER_API_KEY"]
-
+# ✅ SAFE ACCESS TO secrets
+TOGETHER_KEY = st.secrets.get("together", {}).get("TOGETHER_API_KEY", "")
+os.environ["OPENAI_API_KEY"] = TOGETHER_KEY
 llm = ChatTogether(
     model="mistralai/Mistral-7B-Instruct-v0.1",
     temperature=0.2,
