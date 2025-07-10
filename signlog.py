@@ -56,7 +56,8 @@ def get_connection():
         port=db["port"],
         dbname=db["dbname"],
         user=db["user"],
-        password=db["password"]
+        password=db["password"],
+        sslmode="require"  # 🔒 this line is crucial
     )
 def send_password_email(to_email, password):
     message = Mail(
