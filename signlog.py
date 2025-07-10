@@ -17,6 +17,10 @@ import uuid
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 import os
+from get_connection import get_connection
+import psycopg2
+import streamlit as st
+
 # signlog.py
 SENDGRID_API_KEY = st.secrets["sendgrid"]["SENDGRID_API_KEY"]
 SENDER_EMAIL = st.secrets["sendgrid"]["SENDER_EMAIL"]
@@ -46,18 +50,7 @@ def send_otp_email(to_email, otp):
     except Exception as e:
         print(f"SendGrid Error: {e}")
         return False
-import psycopg2
-import streamlit as st
-def get_connection():
-    db = st.secrets["database"]
-    return psycopg2.connect(
-        host=db["host"],
-        port=db["port"],
-        database=db["dbname"],
-        user=db["user"],
-        password=db["password"],
-        sslmode="require"
-    )
+
 def send_password_email(to_email, password):
     message = Mail(
         from_email=SENDER_EMAIL,
