@@ -11,7 +11,7 @@ def get_connection():
             port="6543",
             database="postgres",
             user="postgres",
-            password="Hema!@#7254"
+            password="Hema!@#7254",
             sslmode="require"  # 🔒 this line is crucial
         )
         return conn
