@@ -1,16 +1,16 @@
 # llm_router.py
 import requests
-from dotenv import load_dotenv
-load_dotenv()
 import os
-TOGETHER_API_KEY = os.getenv("TOGETHER_API_KEY")
+import streamlit as st
+
+os.environ["TOGETHER_API_KEY"] = st.secrets["together"]["TOGETHER_API_KEY"]
 
 class FlashcardLLMRouter:
     @staticmethod
     def generate(prompt, model="mistralai/Mixtral-8x7B-Instruct-v0.1", temperature=0.3, max_tokens=1024):
         url = "https://api.together.xyz/v1/chat/completions"
         headers = {
-            "Authorization": f"Bearer {TOGETHER_API_KEY}",
+            "Authorization": f"Bearer {st.secrets['together']['TOGETHER_API_KEY']}",
             "Content-Type": "application/json"
         }
         payload = {
