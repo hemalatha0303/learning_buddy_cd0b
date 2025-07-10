@@ -11,7 +11,8 @@ def get_connection():
             port=db["port"],
             dbname=db["dbname"],
             user=db["user"],
-            password=db["password"]
+            password=db["password"],
+            sslmode="require"  # 🔒 this line is crucial
         )
         return conn
     except OperationalError as e:
