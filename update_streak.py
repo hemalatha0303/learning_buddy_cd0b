@@ -3,12 +3,12 @@ import psycopg2
 
 def get_connection():
     return psycopg2.connect(
-        host="localhost",
-        database="signlog",
-        user="postgres",
-        password="postgre"
+        host=st.secrets["database"]["host"],
+        port=st.secrets["database"]["port"],
+        dbname=st.secrets["database"]["dbname"],
+        user=st.secrets["database"]["user"],
+        password=st.secrets["database"]["password"]
     )
-
 def update_streak(user_id):
     conn = get_connection()
     cur = conn.cursor()
