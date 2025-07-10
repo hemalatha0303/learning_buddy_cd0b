@@ -46,14 +46,17 @@ def send_otp_email(to_email, otp):
     except Exception as e:
         print(f"SendGrid Error: {e}")
         return False
-
+import psycopg2
+import streamlit as st
 
 def get_connection():
+    db = st.secrets["database"]  # ✅ move this inside the function
     return psycopg2.connect(
-        host="localhost",
-        database="signlog",
-        user="postgres",
-        password="postgre"
+        host=db["host"],
+        port=db["port"],
+        dbname=db["dbname"],
+        user=db["user"],
+        password=db["password"]
     )
 def send_password_email(to_email, password):
     message = Mail(
