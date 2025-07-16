@@ -1,13 +1,9 @@
-import os
 import json
 import firebase_admin
 from firebase_admin import credentials, firestore
+import streamlit as st
 
-cred_json = os.environ.get("FIREBASE_CREDENTIALS_JSON")
-
-if not cred_json:
-    raise ValueError("🔥 FIREBASE_CREDENTIALS_JSON is not set in Streamlit secrets or environment variables.")
-
+cred_json = st.secrets["firebase"]["FIREBASE_CREDENTIALS_JSON"]
 cred = credentials.Certificate(json.loads(cred_json))
 
 if not firebase_admin._apps:
