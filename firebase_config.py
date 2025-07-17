@@ -1,12 +1,13 @@
-import json
 import firebase_admin
 from firebase_admin import credentials, firestore
+import json
 import streamlit as st
 
-cred_json = st.secrets["firebase"]["FIREBASE_CREDENTIALS_JSON"]
-cred = credentials.Certificate(json.loads(cred_json))
+@st.cache_resource
+def get_db():
+    if not firebase_admin._apps:
+        cred = credentials.Certificate(json.loads(st.secrets["firebase_service_account"]))
+        firebase_admin.initialize_app(cred)
+    return firestore.client()
 
-if not firebase_admin._apps:
-    firebase_admin.initialize_app(cred)
-
-db = firestore.client()
+db = get_db()
