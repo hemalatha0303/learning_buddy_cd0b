@@ -162,52 +162,51 @@ def show_auth_page():
                     st.rerun()
                                 
                 if st.button("Sign In", key="signin_btn"):
-                    email = st.session_state.signin_email
-                    password = st.session_state.signin_password
-                    st.spinner("Signing you in...")
-
-                    if email and password:
-                        try:
-                            # 🔍 Query Firestore for matching user
-                            users_ref = db.collection("users")
-                            query = users_ref.where("email", "==", email).where("password", "==", password).stream()
-                            user_doc = next(query, None)
-
-                            if user_doc:
-                                user_data = user_doc.to_dict()
-                                if not user_data.get("is_verified"):
-                                    st.warning("⚠️ Your email is not verified.")
-                                else:
-                                    st.session_state.signed_in = True
-                                    st.session_state.user_id = user_doc.id
-                                    st.session_state.user_name = user_data.get("full_name")
-                                    st.session_state.user_email = user_data.get("email")
-                                    st.session_state.page = 'home'
-                                    st.session_state.current_page = 'Home'
-                                    st.success("🎉 Successfully signed in! Welcome back.")
-
-                                    # 🔥 Update study streak
-                                    today = datetime.now()
-                                    last_login = user_data.get("last_login_date")
-                                    streak = user_data.get("study_streak", 0)
-
-                                    if last_login == today:
-                                        new_streak = streak
-                                    elif last_login == (today - timedelta(days=1)):
-                                        new_streak = streak + 1
+                    email = st.session_state.signin_email.strip().lower()
+                    password = st.session_state.signin_password.strip()
+                
+                    with st.spinner("Signing you in..."):
+                        if email and password:
+                            try:
+                                users_ref = db.collection("users")
+                                query = users_ref.where("email", "==", email).where("password", "==", password).get()
+                
+                                if query:
+                                    user_doc = query[0]
+                                    user_data = user_doc.to_dict()
+                
+                                    if not user_data.get("is_verified", False):
+                                        st.warning("⚠️ Your email is not verified.")
                                     else:
-                                        new_streak = 1
-
-                                    db.collection("users").document(user_doc.id).update({
-                                        "study_streak": new_streak,
-                                        "last_login_date": today
-                                    })
-
-                                    st.rerun()
-                            else:
-                                st.error("❌ Invalid email or password")
-                        except Exception as e:
-                            st.error(f"🔥 Firebase error: {e}")
+                                        st.session_state.signed_in = True
+                                        st.session_state.user_id = user_doc.id
+                                        st.session_state.user_name = user_data.get("full_name")
+                                        st.session_state.user_email = user_data.get("email")
+                                        st.session_state.page = 'home'
+                                        st.session_state.current_page = 'Home'
+                                        st.success("🎉 Successfully signed in! Welcome back.")
+                
+                                        today = datetime.now().date()
+                                        last_login = user_data.get("last_login_date")
+                                        streak = user_data.get("study_streak", 0)
+                
+                                        if last_login == today:
+                                            new_streak = streak
+                                        elif last_login == (today - timedelta(days=1)):
+                                            new_streak = streak + 1
+                                        else:
+                                            new_streak = 1
+                
+                                        db.collection("users").document(user_doc.id).update({
+                                            "study_streak": new_streak,
+                                            "last_login_date": today
+                                        })
+                                        st.rerun()
+                                else:
+                                    st.error("❌ Invalid email or password")
+                            except Exception as e:
+                                st.error(f"🔥 Firebase error: {e}")
+                
 
             with tab2:
                 st.text_input("👤 Full Name", placeholder="Enter your full name", key="signup_name")
@@ -226,15 +225,15 @@ def show_auth_page():
                             try:
                                 otp = generate_otp()
                                 users_ref = db.collection("users")
-                                existing_users = users_ref.where("email", "==", email).stream()
-                                if any(existing_users):
+                                existing_user = next(users_ref.where("email", "==", email).limit(1).stream(), None)
+                                if existing_user:
                                     st.error("⚠️ Email already registered.")
                                 else:
                                     db.collection("users").add({
                                         "full_name": name,
                                         "email": email,
                                         "password": password,
-                                        "created_at": datetime.now(),
+                                        "created_at": firestore.SERVER_TIMESTAMP,
                                         "otp_code": otp,
                                         "is_verified": False,
                                         "study_streak": 0,
