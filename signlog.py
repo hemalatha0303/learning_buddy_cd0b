@@ -164,6 +164,7 @@ def show_auth_page():
                 if st.button("Sign In", key="signin_btn"):
                     email = st.session_state.signin_email
                     password = st.session_state.signin_password
+                    st.spinner("Signing you in...")
 
                     if email and password:
                         try:
