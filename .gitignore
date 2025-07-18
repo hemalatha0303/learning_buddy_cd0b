@@ -3,5 +3,5 @@
 # Ignore API keys in Python
 gen_flashcards.py
 
-firebase_config.py
 firebase_credentials.json
+.env
