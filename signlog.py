@@ -154,30 +154,32 @@ def show_auth_page():
             tab1, tab2 = st.tabs(["🔑 Sign In", "👤 Sign Up"])
 
             with tab1:
-
                 st.text_input("📧 Email Address", placeholder="Enter your email", key="signin_email")
                 st.text_input("🔐 Password", placeholder="Enter your password", type="password", key="signin_password")
+            
                 if st.button("❓ Forgot Password"):
                     st.session_state.page = "forgot_password"
                     st.rerun()
-                                
+            
                 if st.button("Sign In", key="signin_btn"):
                     email = st.session_state.signin_email.strip().lower()
                     password = st.session_state.signin_password.strip()
-                
-                    with st.spinner("Signing you in..."):
-                        if email and password:
+            
+                    if email and password:
+                        with st.spinner("Signing you in..."):
                             try:
-                                users_ref = db.collection("users")
-                                query = users_ref.where("email", "==", email).where("password", "==", password).get()
-                
-                                if query:
-                                    user_doc = query[0]
+                                users_ref = db.collection("users").where("email", "==", email).limit(1).stream()
+                                user_doc = next(users_ref, None)
+            
+                                if user_doc:
                                     user_data = user_doc.to_dict()
-                
-                                    if not user_data.get("is_verified", False):
+            
+                                    if password != user_data.get("password"):
+                                        st.error("❌ Invalid email or password")
+                                    elif not user_data.get("is_verified", False):
                                         st.warning("⚠️ Your email is not verified.")
                                     else:
+                                        # ✅ Login success
                                         st.session_state.signed_in = True
                                         st.session_state.user_id = user_doc.id
                                         st.session_state.user_name = user_data.get("full_name")
@@ -185,103 +187,108 @@ def show_auth_page():
                                         st.session_state.page = 'home'
                                         st.session_state.current_page = 'Home'
                                         st.success("🎉 Successfully signed in! Welcome back.")
-                
+            
+                                        # 🔄 Update login streak
                                         today = datetime.now().date()
                                         last_login = user_data.get("last_login_date")
                                         streak = user_data.get("study_streak", 0)
-                
+            
                                         if last_login == today:
                                             new_streak = streak
                                         elif last_login == (today - timedelta(days=1)):
                                             new_streak = streak + 1
                                         else:
                                             new_streak = 1
-                
+            
                                         db.collection("users").document(user_doc.id).update({
                                             "study_streak": new_streak,
                                             "last_login_date": today
                                         })
+            
                                         st.rerun()
                                 else:
                                     st.error("❌ Invalid email or password")
                             except Exception as e:
-                                st.error(f"🔥 Firebase error: {e}")
-                
-
+                                st.error(f"🔥 Firebase error: {str(e)}")
+            
+            
+            # -------------------- 👤 SIGN UP TAB --------------------
             with tab2:
                 st.text_input("👤 Full Name", placeholder="Enter your full name", key="signup_name")
                 st.text_input("📧 Email Address", placeholder="Enter your email", key="signup_email")
                 st.text_input("🔐 Password", placeholder="Create a strong password", type="password", key="signup_password")
                 st.text_input("🔐 Confirm Password", placeholder="Re-enter your password", type="password", key="confirm_password")
-
+            
                 if st.button("Create Account", key="signup_btn"):
-                    name = st.session_state.signup_name
-                    email = st.session_state.signup_email
-                    password = st.session_state.signup_password
-                    confirm = st.session_state.confirm_password
-
+                    name = st.session_state.signup_name.strip()
+                    email = st.session_state.signup_email.strip().lower()
+                    password = st.session_state.signup_password.strip()
+                    confirm = st.session_state.confirm_password.strip()
+            
                     if name and email and password and confirm:
-                        if password == confirm:
-                            try:
-                                otp = generate_otp()
-                                users_ref = db.collection("users")
-                                existing_user = next(users_ref.where("email", "==", email).limit(1).stream(), None)
-                                if existing_user:
-                                    st.error("⚠️ Email already registered.")
-                                else:
-                                    db.collection("users").add({
-                                        "full_name": name,
-                                        "email": email,
-                                        "password": password,
-                                        "created_at": firestore.SERVER_TIMESTAMP,
-                                        "otp_code": otp,
-                                        "is_verified": False,
-                                        "study_streak": 0,
-                                        "last_login_date": None
-                                    })
-
-                                    if send_otp_email(email, otp):
-                                        st.success("🎉 Account created! OTP sent to your email.")
-                                        st.session_state.verification_email = email
-                                        st.session_state.show_verification = True
-                                    else:
-                                        st.error("❌ Failed to send OTP.")
-                            except Exception as e:
-                                st.error(f"🔥 Firebase error: {e}")
-                        else:
+                        if password != confirm:
                             st.error("❌ Passwords don't match.")
+                        else:
+                            with st.spinner("Creating your account..."):
+                                try:
+                                    users_ref = db.collection("users")
+                                    existing_user = next(users_ref.where("email", "==", email).limit(1).stream(), None)
+            
+                                    if existing_user:
+                                        st.error("⚠️ Email already registered.")
+                                    else:
+                                        otp = generate_otp()
+                                        db.collection("users").add({
+                                            "full_name": name,
+                                            "email": email,
+                                            "password": password,
+                                            "created_at": firestore.SERVER_TIMESTAMP,
+                                            "otp_code": otp,
+                                            "is_verified": False,
+                                            "study_streak": 0,
+                                            "last_login_date": None
+                                        })
+            
+                                        if send_otp_email(email, otp):
+                                            st.success("🎉 Account created! OTP sent to your email.")
+                                            st.session_state.verification_email = email
+                                            st.session_state.show_verification = True
+                                        else:
+                                            st.error("❌ Failed to send OTP.")
+                                except Exception as e:
+                                    st.error(f"🔥 Firebase error: {str(e)}")
                     else:
                         st.error("❗ All fields are required.")
-
-
-                # 🔐 OTP Verification UI
+            
+                # -------------------- 🔐 OTP VERIFICATION --------------------
                 if st.session_state.get("show_verification", False):
                     st.markdown("### 🔐 Email Verification")
                     otp_input = st.text_input("Enter the OTP sent to your email:")
-
+            
                     if st.button("✅ Verify OTP"):
-                        try:
-                            users_ref = db.collection("users").where("email", "==", st.session_state.verification_email)
-                            user_doc = next(users_ref.stream(), None)
-
-                            if user_doc and otp_input == user_doc.to_dict().get("otp_code"):
-                                db.collection("users").document(user_doc.id).update({
-                                    "is_verified": True,
-                                    "otp_code": firestore.DELETE_FIELD
-                                })
-                                st.success("✅ Email verified! You can now sign in.")
-                                st.session_state.show_verification = False
-                            else:
-                                st.error("❌ Incorrect OTP.")
-                        except Exception as e:
-                            st.error(f"🔥 Firebase error: {e}")
-
+                        with st.spinner("Verifying..."):
+                            try:
+                                users_ref = db.collection("users").where("email", "==", st.session_state.verification_email)
+                                user_doc = next(users_ref.stream(), None)
+            
+                                if user_doc and otp_input == user_doc.to_dict().get("otp_code"):
+                                    db.collection("users").document(user_doc.id).update({
+                                        "is_verified": True,
+                                        "otp_code": firestore.DELETE_FIELD
+                                    })
+                                    st.success("✅ Email verified! You can now sign in.")
+                                    st.session_state.show_verification = False
+                                else:
+                                    st.error("❌ Incorrect OTP.")
+                            except Exception as e:
+                                st.error(f"🔥 Firebase error: {str(e)}")
+            
                     if st.button("🔁 Resend OTP"):
                         try:
                             new_otp = generate_otp()
                             users_ref = db.collection("users").where("email", "==", st.session_state.verification_email)
                             user_doc = next(users_ref.stream(), None)
-
+            
                             if user_doc:
                                 db.collection("users").document(user_doc.id).update({"otp_code": new_otp})
                                 if send_otp_email(st.session_state.verification_email, new_otp):
@@ -289,7 +296,7 @@ def show_auth_page():
                                 else:
                                     st.error("❌ Failed to send OTP.")
                         except Exception as e:
-                            st.error(f"🔥 Firebase error: {e}")
+                            st.error(f"🔥 Firebase error: {str(e)}")
 
             
     elif st.session_state.page == "forgot_password":
