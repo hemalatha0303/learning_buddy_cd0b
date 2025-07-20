@@ -7,7 +7,10 @@ from quiz_generator import generate_quiz
 from flash_cards_gen import generate_flashcards
 import streamlit as st
 from datetime import date
-
+import streamlit as st
+import json
+from google.cloud import firestore
+from datetime import datetime
 import json
 from saved_db import save_quiz_attempt
 import json
@@ -29,7 +32,7 @@ from datetime import datetime
 import json
 import streamlit as st
 # Main content area
-
+db = firestore.Client()
 def show_home():
     # --- CSS Styling ---
     st.markdown("""
@@ -1116,8 +1119,6 @@ def show_saved_content():
         color: white !important;
     }
 
-                
-
         .generate-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
@@ -1176,9 +1177,8 @@ def show_saved_content():
         for page in pages:
             if st.button(page, key=page, use_container_width=True):
                 st.session_state.current_page = page.split(' ', 1)[1]
-
     col1, col2 = st.columns([4, 1])
-   
+
     with col1:
         st.markdown('<div class="welcome-header" style="color:#ffffff; text-shadow: 0 0 10px #C66727;">Saved Quizzes</div>', unsafe_allow_html=True)
         st.markdown('<div class="welcome-subtext" style="color:#ffffff; text-shadow: 0 0 10px #C66727;">Review your previously attempted quizzes here.</div>', unsafe_allow_html=True)
@@ -1189,95 +1189,6 @@ def show_saved_content():
             st.session_state.signed_in = False
             st.session_state.current_page = 'Home'
 
-    user_id = st.session_state.get("user_id")
-    if not user_id:
-        st.error("❌ User ID not found in session. Please log in again.")
-        return
-
-    '''user_name = st.session_state.get("user_name")
-    user_email = st.session_state.get("user_email")
-
-    # 🔒 Handle unsaved quiz attempt first
-    if 'last_attempt' in st.session_state:
-        st.warning("📌 You have an unsaved quiz attempt.")
-        if st.button("💾 Save Last Attempt to Database"):
-            try:
-                if not all([user_id, user_name, user_email]):
-                    st.error("❌ Missing user details. Please log in again.")
-                    return
-
-                attempt = st.session_state.last_attempt
-                if "attempted_at" not in attempt:
-                    attempt["attempted_at"] = datetime.now()
-                if not attempt.get("topic"):
-                    attempt["topic"] = "Unknown Topic"
-
-                # Save to Firebase
-                save_quiz_attempt(user_id, user_name, user_email, attempt)
-                st.success("✅ Quiz attempt saved to Firebase!")
-                del st.session_state.last_attempt
-                st.session_state.quiz_count += 1
-                st.rerun()
-            except Exception as e:
-                st.error(f"❌ Failed to save quiz to Firebase: {e}")
-        return
-
-    # ✅ Load saved attempts from Firestore
-    try:
-        query = db.collection("quiz_attempts") \
-          .where("user_id", "==", user_id) \
-          .order_by("attempted_at", direction="DESCENDING") \
-          .stream()
-        attempts = [doc.to_dict() for doc in query]
-    except Exception as e:
-        st.error(f"⚠️ Failed to load attempts: {e}")
-        return
-
-    if not attempts:
-        st.info("❗ No quizzes attempted yet.")
-        return
-
-    # ✅ Display all attempts
-    st.subheader("📚 Saved Quizzes")
-    st.caption("Review your previously attempted quizzes here.")
-
-    for i, quiz in enumerate(attempts):
-        # Handle stringified JSON if stored as string
-        questions = quiz["questions"]
-        if isinstance(questions, str):
-            try:
-                questions = json.loads(questions)
-            except Exception:
-                questions = []
-
-        answers = quiz["answers"]
-        if isinstance(answers, str):
-            try:
-                answers = json.loads(answers)
-            except Exception:
-                answers = {}
-
-        time = quiz.get("attempted_at", "Unknown time")
-
-        with st.expander(f"📘 Attempt {i+1}: {quiz.get('topic', 'N/A')} | Score: {quiz.get('score', '0/0')}"):
-            st.markdown(f"**📝 Topic:** {quiz.get('topic', 'Unknown')}")            
-            st.markdown(f"**🎯 Difficulty:** {quiz.get('difficulty', 'Unknown')}")  
-            st.markdown(f"**🏆 Score:** {quiz.get('score', '0/0')} ({quiz.get('percentage', '0%')})")
-            st.markdown(f"**🕒 Attempted At:** {time}")
-            st.markdown("---")
-
-            for idx, q in enumerate(questions):
-                user_ans = answers.get(str(idx), "Not Answered")
-                correct_ans = q.get("correct_answer", "N/A")
-                explanation = q.get("explanation") or "No explanation available"
-                result = "✅ Correct!" if user_ans == correct_ans else "❌ Incorrect"
-
-                st.markdown(f"**Q{idx+1}:** {q['question']}")
-                st.markdown(f"- **Your Answer:** {user_ans}")
-                st.markdown(f"- **Correct Answer:** {correct_ans}")
-                st.markdown(f"- **Result:** {result}")
-                st.markdown(f"- **Explanation:** {explanation}")
-                st.markdown("---")'''
     user_id = st.session_state.get("user_id")
     if not user_id:
         st.error("❌ User ID not found in session. Please log in again.")
@@ -1298,11 +1209,22 @@ def show_saved_content():
                 attempt = st.session_state.last_attempt
 
                 if "attempted_at" not in attempt:
-                    attempt["attempted_at"] = datetime.now()
+                    attempt["attempted_at"] = datetime.utcnow()
                 if not attempt.get("topic"):
                     attempt["topic"] = "Unknown Topic"
 
-                save_quiz_attempt(user_id, user_name, user_email, attempt)
+                # Save quiz to Firestore
+                db.collection("quiz_attempts").add({
+                    "user_id": user_id,
+                    "topic": attempt.get("topic"),
+                    "difficulty": attempt.get("difficulty", "N/A"),
+                    "questions": json.dumps(attempt.get("questions", [])),
+                    "answers": json.dumps(attempt.get("answers", {})),
+                    "score": attempt.get("score", "0/0"),
+                    "percentage": attempt.get("percentage", "0%"),
+                    "attempted_at": attempt["attempted_at"]
+                })
+
                 st.success("✅ Quiz attempt saved to Firebase!")
                 del st.session_state.last_attempt
                 st.session_state.quiz_count += 1
@@ -1315,7 +1237,7 @@ def show_saved_content():
     try:
         query = db.collection("quiz_attempts") \
                   .where("user_id", "==", user_id) \
-                  .order_by("attempted_at", direction="DESCENDING") \
+                  .order_by("attempted_at", direction=firestore.Query.DESCENDING) \
                   .stream()
         attempts = [doc.to_dict() for doc in query]
     except Exception as e:
@@ -1328,21 +1250,18 @@ def show_saved_content():
 
     st.subheader("📚 Saved Quizzes")
     st.caption("Review your previously attempted quizzes here.")
-    
+
     for i, quiz in enumerate(attempts):
-        # 🔁 Handle attempted_at formatting
+        # Format timestamp
         attempted_at = quiz.get("attempted_at", "Unknown time")
-        try:
-            attempted_at = datetime.fromisoformat(attempted_at).strftime("%Y-%m-%d %H:%M")
-        except:
-            pass
-    
-        # 🧠 Deserialize JSON strings
+        if isinstance(attempted_at, datetime):
+            attempted_at = attempted_at.strftime("%Y-%m-%d %H:%M")
+
         try:
             questions = json.loads(quiz.get("questions", "[]"))
         except:
             questions = []
-    
+
         try:
             answers = json.loads(quiz.get("answers", "{}"))
         except:
@@ -1352,16 +1271,17 @@ def show_saved_content():
             st.markdown(f"**📝 Topic:** {quiz.get('topic', 'Unknown')}")            
             st.markdown(f"**🎯 Difficulty:** {quiz.get('difficulty', 'Unknown')}")  
             st.markdown(f"**🏆 Score:** {quiz.get('score', '0/0')} ({quiz.get('percentage', '0%')})")
-            st.markdown(f"**🕒 Attempted At:** {time}")
+            st.markdown(f"**🕒 Attempted At:** {attempted_at}")
             st.markdown("---")
 
             for idx, q in enumerate(questions):
+                question_text = q.get("question", "N/A")
                 user_ans = answers.get(str(idx), "Not Answered")
                 correct_ans = q.get("correct_answer", "N/A")
                 explanation = q.get("explanation") or "No explanation available"
                 result = "✅ Correct!" if user_ans == correct_ans else "❌ Incorrect"
 
-                st.markdown(f"**Q{idx+1}:** {q.get('question', 'N/A')}")
+                st.markdown(f"**Q{idx+1}:** {question_text}")
                 st.markdown(f"- **Your Answer:** {user_ans}")
                 st.markdown(f"- **Correct Answer:** {correct_ans}")
                 st.markdown(f"- **Result:** {result}")
@@ -1376,6 +1296,8 @@ def show_saved_content():
         '</div>', 
         unsafe_allow_html=True
     )
+
+ 
 
 def show_profile():
     # Custom CSS for styling
