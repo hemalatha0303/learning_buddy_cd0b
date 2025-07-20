@@ -58,10 +58,9 @@ def generate_flashcards(text, difficulty, include_summary):
     content = FlashcardLLMRouter.generate(prompt)
 
     # 🔍 Extract JSON list
-    match = re.search(r"\[\s*{.*}\s*]", content, re.DOTALL)
+    match = re.search(r"\[.*\]", content, re.DOTALL)
     if not match:
         raise ValueError("⚠️ Failed to parse flashcards from LLM response.")
-
     try:
         cards = json.loads(match.group(0))
     except Exception as e:
