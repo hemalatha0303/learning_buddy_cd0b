@@ -143,6 +143,7 @@ def show_auth_page():
                                 st.success("🎉 Account created! Check your email for OTP.")
                             else:
                                 st.error("❌ Failed to send OTP.")
+                                st.code(traceback.format_exc())
                     else:
                         st.error("❗ Please fill all fields and match passwords.")
 
