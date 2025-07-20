@@ -36,27 +36,30 @@ os.environ["TOGETHER_API_KEY"] = st.secrets["together"]["TOGETHER_API_KEY"]
 
 def generate_otp():
     return str(uuid.uuid4())[:6].upper()  # 6-char OTP
-
 def send_otp_email(email, otp):
     try:
         message = Mail(
             from_email=st.secrets["sendgrid"]["SENDER_EMAIL"],
             to_emails=email,
             subject="Your OTP Code",
-            plain_text_content=f"Your OTP code is: {otp}"
+            plain_text_content=f"Your OTP is: {otp}"
         )
         sg = SendGridAPIClient(st.secrets["sendgrid"]["SENDGRID_API_KEY"])
         response = sg.send(message)
 
+        st.write("STATUS:", response.status_code)
+        st.write("HEADERS:", response.headers)
+        st.write("BODY:", response.body)  # Might be empty for 202
+
         if response.status_code == 202:
             return True
         else:
-            st.error(f"SendGrid error: {response.status_code}")
-            st.text(response.body)
             return False
     except Exception as e:
+        st.error("SendGrid Exception:")
         st.exception(e)
         return False
+
 def send_password_email(to_email, password):
     message = Mail(
         from_email=SENDER_EMAIL,
