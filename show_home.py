@@ -694,13 +694,14 @@ def build_mindmap_html(node, include_summaries, prefix="node"):
             <strong>📖 Content:</strong> {content}<br>
             {"<em>💡 Summary:</em> " + summary if include_summaries and summary else ""}
         </div>
-    """)
-
+    """)  # ✅ THIS LINE closes the f-string properly
+    
     if "children" in node:
         for i, child in enumerate(node["children"]):
             html_parts.append(build_mindmap_html(child, include_summaries, f"{prefix}-{i}"))
-
+    
     return "\n".join(html_parts)
+
 
 
 def show_flashcards():
