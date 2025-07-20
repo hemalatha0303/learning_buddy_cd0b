@@ -1271,8 +1271,12 @@ def show_saved_content():
             st.markdown(f"**📝 Topic:** {quiz.get('topic', 'Unknown')}")            
             st.markdown(f"**🎯 Difficulty:** {quiz.get('difficulty', 'Unknown')}")  
             st.markdown(f"**🏆 Score:** {quiz.get('score', '0/0')} ({quiz.get('percentage', '0%')})")
-            st.markdown(f"**🕒 Attempted At:** {attempted_at}")
-            st.markdown("---")
+            if 'attempted_at' in quiz:
+                attempted_at = datetime.strptime(quiz['attempted_at'], "%Y-%m-%d %H:%M:%S")
+                st.markdown(f"**🕒 Attempted At:** {attempted_at.strftime('%b %d, %Y - %I:%M %p')}")
+            else:
+                st.markdown("**🕒 Attempted At:** Not Available")
+                st.markdown("---")
 
             for idx, q in enumerate(questions):
                 question_text = q.get("question", "N/A")
