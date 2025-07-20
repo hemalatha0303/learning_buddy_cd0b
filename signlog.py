@@ -189,21 +189,29 @@ def show_auth_page():
                                         st.success("🎉 Successfully signed in! Welcome back.")
             
                                         # 🔄 Update login streak
-                                        today = datetime.now().date()
+                                        # 🔄 Update login streak
+                                        today = datetime.now()
                                         last_login = user_data.get("last_login_date")
+                                        
+                                        if isinstance(last_login, datetime):
+                                            last_login_date = last_login.date()
+                                        else:
+                                            last_login_date = None
+                                        
                                         streak = user_data.get("study_streak", 0)
-            
-                                        if last_login == today:
+                                        
+                                        if last_login_date == today.date():
                                             new_streak = streak
-                                        elif last_login == (today - timedelta(days=1)):
+                                        elif last_login_date == (today.date() - timedelta(days=1)):
                                             new_streak = streak + 1
                                         else:
                                             new_streak = 1
-            
+                                        
                                         db.collection("users").document(user_doc.id).update({
                                             "study_streak": new_streak,
                                             "last_login_date": today
                                         })
+
             
                                         st.rerun()
                                 else:
