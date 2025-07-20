@@ -35,6 +35,7 @@ import streamlit as st
 db = firestore.Client()
 def show_home():
     # --- CSS Styling ---
+    from signlog import show_auth_page
     st.markdown("""
     <style>
         .stApp {
