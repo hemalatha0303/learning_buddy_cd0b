@@ -6,6 +6,8 @@ import pandas as pd
 from quiz_generator import generate_quiz
 from flash_cards_gen import generate_flashcards
 import streamlit as st
+from datetime import date
+
 import json
 from saved_db import save_quiz_attempt
 import json
@@ -1188,6 +1190,10 @@ def show_saved_content():
             st.session_state.current_page = 'Home'
 
     user_id = st.session_state.get("user_id")
+    if not user_id:
+        st.error("❌ User ID not found in session. Please log in again.")
+        return
+
     user_name = st.session_state.get("user_name")
     user_email = st.session_state.get("user_email")
 
@@ -1219,9 +1225,9 @@ def show_saved_content():
     # ✅ Load saved attempts from Firestore
     try:
         query = db.collection("quiz_attempts") \
-                  .where("user_id", "==", user_id) \
-                  .order_by("attempted_at", direction="DESCENDING") \
-                  .stream()
+          .where("user_id", "==", user_id) \
+          .order_by("attempted_at", direction="DESCENDING") \
+          .stream()
         attempts = [doc.to_dict() for doc in query]
     except Exception as e:
         st.error(f"⚠️ Failed to load attempts: {e}")
