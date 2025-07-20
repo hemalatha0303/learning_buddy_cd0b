@@ -13,6 +13,8 @@ def save_quiz_attempt(user_id, user_name, user_email, attempt):
     attempted_at = attempt.get("attempted_at")
     if isinstance(attempted_at, str):
         attempted_at = datetime.fromisoformat(attempted_at)
+    elif isinstance(attempted_at, date) and not isinstance(attempted_at, datetime):
+        attempted_at = datetime.combine(attempted_at, datetime.min.time())
     elif attempted_at is None:
         attempted_at = datetime.now()
 
