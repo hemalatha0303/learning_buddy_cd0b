@@ -1194,7 +1194,7 @@ def show_saved_content():
         st.error("❌ User ID not found in session. Please log in again.")
         return
 
-    user_name = st.session_state.get("user_name")
+    '''user_name = st.session_state.get("user_name")
     user_email = st.session_state.get("user_email")
 
     # 🔒 Handle unsaved quiz attempt first
@@ -1277,7 +1277,104 @@ def show_saved_content():
                 st.markdown(f"- **Correct Answer:** {correct_ans}")
                 st.markdown(f"- **Result:** {result}")
                 st.markdown(f"- **Explanation:** {explanation}")
+                st.markdown("---")'''
+    user_id = st.session_state.get("user_id")
+    if not user_id:
+        st.error("❌ User ID not found in session. Please log in again.")
+        return
+
+    user_name = st.session_state.get("user_name")
+    user_email = st.session_state.get("user_email")
+
+    # 🔒 Save last unsaved attempt if present
+    if 'last_attempt' in st.session_state:
+        st.warning("📌 You have an unsaved quiz attempt.")
+        if st.button("💾 Save Last Attempt to Database"):
+            try:
+                if not all([user_id, user_name, user_email]):
+                    st.error("❌ Missing user details. Please log in again.")
+                    return
+
+                attempt = st.session_state.last_attempt
+
+                if "attempted_at" not in attempt:
+                    attempt["attempted_at"] = datetime.now()
+                if not attempt.get("topic"):
+                    attempt["topic"] = "Unknown Topic"
+
+                save_quiz_attempt(user_id, user_name, user_email, attempt)
+                st.success("✅ Quiz attempt saved to Firebase!")
+                del st.session_state.last_attempt
+                st.session_state.quiz_count += 1
+                st.rerun()
+            except Exception as e:
+                st.error(f"❌ Failed to save quiz to Firebase: {e}")
+        return
+
+    # ✅ Load all saved attempts from Firestore
+    try:
+        query = db.collection("quiz_attempts") \
+                  .where("user_id", "==", user_id) \
+                  .order_by("attempted_at", direction="DESCENDING") \
+                  .stream()
+        attempts = [doc.to_dict() for doc in query]
+    except Exception as e:
+        st.error(f"⚠️ Failed to load attempts: {e}")
+        return
+
+    if not attempts:
+        st.info("❗ No quizzes attempted yet.")
+        return
+
+    st.subheader("📚 Saved Quizzes")
+    st.caption("Review your previously attempted quizzes here.")
+
+    for i, quiz in enumerate(attempts):
+        # ⏱️ Format datetime properly
+        time = quiz.get("attempted_at")
+        if isinstance(time, datetime):
+            time = time.strftime("%Y-%m-%d %H:%M")
+        elif isinstance(time, str):
+            try:
+                time = datetime.fromisoformat(time).strftime("%Y-%m-%d %H:%M")
+            except:
+                pass
+
+        # 🧠 Parse questions + answers
+        questions = quiz.get("questions", [])
+        if isinstance(questions, str):
+            try:
+                questions = json.loads(questions)
+            except:
+                questions = []
+
+        answers = quiz.get("answers", {})
+        if isinstance(answers, str):
+            try:
+                answers = json.loads(answers)
+            except:
+                answers = {}
+
+        with st.expander(f"📘 Attempt {i+1}: {quiz.get('topic', 'N/A')} | Score: {quiz.get('score', '0/0')}"):
+            st.markdown(f"**📝 Topic:** {quiz.get('topic', 'Unknown')}")            
+            st.markdown(f"**🎯 Difficulty:** {quiz.get('difficulty', 'Unknown')}")  
+            st.markdown(f"**🏆 Score:** {quiz.get('score', '0/0')} ({quiz.get('percentage', '0%')})")
+            st.markdown(f"**🕒 Attempted At:** {time}")
+            st.markdown("---")
+
+            for idx, q in enumerate(questions):
+                user_ans = answers.get(str(idx), "Not Answered")
+                correct_ans = q.get("correct_answer", "N/A")
+                explanation = q.get("explanation") or "No explanation available"
+                result = "✅ Correct!" if user_ans == correct_ans else "❌ Incorrect"
+
+                st.markdown(f"**Q{idx+1}:** {q.get('question', 'N/A')}")
+                st.markdown(f"- **Your Answer:** {user_ans}")
+                st.markdown(f"- **Correct Answer:** {correct_ans}")
+                st.markdown(f"- **Result:** {result}")
+                st.markdown(f"- **Explanation:** {explanation}")
                 st.markdown("---")
+
     # Footer
     st.markdown("---")
     st.markdown(
