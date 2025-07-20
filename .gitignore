@@ -1,5 +1,5 @@
 .streamlit/secrets.toml
-
+.streamlit/config.toml
 
 # Ignore API keys in Python
 gen_flashcards.py
