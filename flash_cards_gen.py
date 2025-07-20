@@ -60,10 +60,12 @@ def generate_flashcards(text, difficulty, include_summary):
     # 🔍 Extract JSON list
     match = re.search(r"\[.*\]", content, re.DOTALL)
     if not match:
+        print("LLM raw content:", content)
         raise ValueError("⚠️ Failed to parse flashcards from LLM response.")
     try:
         cards = json5.loads(match.group(0))
     except Exception as e:
+        print("Matched JSON string:", match.group(0))  # 🛠️ Debug print
         raise ValueError(f"⚠️ JSON decoding failed: {e}")
 
     if not isinstance(cards, list) or not cards:
