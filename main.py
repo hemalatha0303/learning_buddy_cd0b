@@ -1,7 +1,6 @@
 #main.py
 import streamlit as st
 import os
-from signlog import show_auth_page
 
 st.set_page_config(
     page_title="Learning Buddy",
