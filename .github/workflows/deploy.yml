@@ -1,0 +1,30 @@
+name: Deploy Streamlit App
+
+on:
+  push:
+    branches:
+      - main  # or your deployment branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run your app or test
+        run: |
+          python app.py  # or streamlit run app.py
