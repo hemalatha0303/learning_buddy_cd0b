@@ -1,7 +1,8 @@
 [server]
+maxUploadSize = 100
 headless = true
-port = 8501
 enableCORS = false
+fileWatcherType = "poll"
 
 [theme]
 base = "dark"
