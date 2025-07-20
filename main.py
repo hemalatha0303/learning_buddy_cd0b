@@ -1,5 +1,7 @@
 #main.py
 import streamlit as st
+import os
+
 
 st.set_page_config(
     page_title="Learning Buddy",
@@ -16,6 +18,8 @@ from show_home import show_profile
 import os
 import streamlit as st
 
+# Force watchdog to use polling instead of inotify (prevents inotify errors)
+os.environ["STREAMLIT_WATCHDOG_USE_POLLING"] = "true"
 os.environ["TOGETHER_API_KEY"] = st.secrets["together"]["TOGETHER_API_KEY"]
 os.environ["OPENAI_API_KEY"] = st.secrets["openai"]["OPENAI_API_KEY"]
 
