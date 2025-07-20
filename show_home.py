@@ -1,35 +1,26 @@
+import os
+import json
+import uuid
+import tempfile
+import html
+from datetime import datetime, timedelta, date
+from urllib.parse import unquote
 
+import pandas as pd
+import streamlit as st
+import streamlit.components.v1 as components
 import plotly.graph_objects as go
 import plotly.express as px
-from datetime import datetime, timedelta
-import pandas as pd
+from fpdf import FPDF
+
+from google.cloud import firestore
+
+from firebase_config import db
 from quiz_generator import generate_quiz
 from flash_cards_gen import generate_flashcards
-import streamlit as st
-from datetime import date
-import streamlit as st
-from google.cloud import firestore
-from datetime import datetime
-import json
-from saved_db import save_quiz_attempt
-import json
-from datetime import datetime
 from saved_db import save_quiz_attempt, get_attempts_for_user
-# --- Handle Profile Actions via Query Params ---
-from urllib.parse import unquote
-import streamlit.components.v1 as components
-import html
-from fpdf import FPDF
-import tempfile
-import os
-from firebase_config import db
-import uuid
 from show_friends import show_friends_page
 from friends_list import get_friends_list
-from firebase_config import db
-from datetime import datetime
-import json
-import streamlit as st
 # Main content area
 db = firestore.Client()
 def show_home():
