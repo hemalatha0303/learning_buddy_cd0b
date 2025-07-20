@@ -1,3 +1,8 @@
+import os
+if os.environ.get("STREAMLIT_ENV") == "cloud":
+    os.environ["WATCHDOG_OBSERVER_TIMEOUT"] = "1000"
+    os.environ["STREAMLIT_WATCHDOG_USE_POLLING"] = "true"
+
 import firebase_admin
 from firebase_admin import credentials, firestore
 import json
