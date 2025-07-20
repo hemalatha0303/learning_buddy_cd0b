@@ -49,6 +49,11 @@ def send_otp_email(email, otp):
         sg.send(message)
     except Exception as e:
         st.error("Failed to send OTP. Try again later.")
+    if send_otp_email(email, otp):
+        st.success("🎉 Account created! OTP sent to your email.")
+    else:
+        st.error("❌ Failed to send OTP.")
+    
 
 
 
