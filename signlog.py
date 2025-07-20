@@ -10,6 +10,9 @@ from firebase_config import db
 # --- Load secrets securely from Streamlit Cloud
 SENDGRID_API_KEY = st.secrets.get("SENDGRID_API_KEY", "")
 SENDER_EMAIL = st.secrets.get("SENDER_EMAIL", "")
+if not SENDGRID_API_KEY or not SENDER_EMAIL:
+    st.error("🚨 Missing SendGrid credentials in Streamlit Cloud secrets. App halted.")
+    st.stop()
 
 # --- OTP Generator
 def generate_otp():
