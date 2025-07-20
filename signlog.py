@@ -29,9 +29,6 @@ import json
 # signlog.py
 SENDGRID_API_KEY = st.secrets["sendgrid"]["SENDGRID_API_KEY"]
 SENDER_EMAIL = st.secrets["sendgrid"]["SENDER_EMAIL"]
-import os
-import streamlit as st
-
 os.environ["TOGETHER_API_KEY"] = st.secrets["together"]["TOGETHER_API_KEY"]
 
 def generate_otp():
