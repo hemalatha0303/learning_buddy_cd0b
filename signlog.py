@@ -8,8 +8,8 @@ from firebase_admin import firestore
 from firebase_config import db
 
 # Constants
-SENDGRID_API_KEY = st.secrets["sendgrid"]["SENDGRID_API_KEY"]
-SENDER_EMAIL = st.secrets["sendgrid"]["SENDER_EMAIL"]
+SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY") or st.secrets["sendgrid"]["SENDGRID_API_KEY"]
+SENDER_EMAIL = os.getenv("SENDER_EMAIL") or st.secrets["sendgrid"]["SENDER_EMAIL"]
 
 # --- OTP Utilities ---
 def generate_otp():
