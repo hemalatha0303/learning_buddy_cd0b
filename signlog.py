@@ -14,24 +14,29 @@ SENDER_EMAIL = st.secrets["sendgrid"]["SENDER_EMAIL"]
 # --- OTP Utilities ---
 def generate_otp():
     return str(uuid.uuid4())[:6].upper()
-
+    
 def send_otp_email(to_email, otp):
-    message = Mail(
-        from_email=SENDER_EMAIL,
-        to_emails=to_email,
-        subject="Your OTP for AI Quiz Generator",
-        html_content=f"""
-        <p>Hello!</p>
-        <p>Your One-Time Password (OTP) is: <strong>{otp}</strong></p>
-        <p>Please use this to verify your email.</p>
-        """
-    )
     try:
+        message = Mail(
+            from_email=SENDER_EMAIL,
+            to_emails=to_email,
+            subject="Your OTP for AI Quiz Generator",
+            html_content=f"""
+            <p>Hello!</p>
+            <p>Your One-Time Password (OTP) is: <strong>{otp}</strong></p>
+            <p>Please use this to verify your email.</p>
+            """
+        )
         sg = SendGridAPIClient(SENDGRID_API_KEY)
         response = sg.send(message)
+        st.write("📬 SendGrid Response Code:", response.status_code)
+        st.write("📬 Response Body:", response.body)
+        st.write("📬 Headers:", response.headers)
+
         return response.status_code == 202
     except Exception as e:
-        print(f"SendGrid Error: {e}")
+        st.error("🚨 SendGrid Exception")
+        st.exception(e)
         return False
 
 def send_password_email(to_email, password):
