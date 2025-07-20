@@ -13,7 +13,7 @@ from show_landing_page import show_landing_page
 from signlog import show_auth_page
 from show_home import show_home, show_generate_quiz, show_flashcards, show_saved_content, show_settings
 from show_home import show_profile
-
+print(">>> Loading: main.py")
 # Force watchdog to use polling instead of inotify (prevents inotify errors)
 os.environ["STREAMLIT_WATCHDOG_USE_POLLING"] = "true"
 os.environ["TOGETHER_API_KEY"] = st.secrets["together"]["TOGETHER_API_KEY"]
