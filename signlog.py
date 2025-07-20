@@ -37,27 +37,25 @@ os.environ["TOGETHER_API_KEY"] = st.secrets["together"]["TOGETHER_API_KEY"]
 def generate_otp():
     return str(uuid.uuid4())[:6].upper()  # 6-char OTP
 
-def send_otp_email(email, otp):
+def send_otp_email(to_email, otp):
+    message = Mail(
+        from_email=SENDER_EMAIL,
+        to_emails=to_email,
+        subject="Your OTP for AI Quiz Generator",
+        html_content=f"""
+        <p>Hello!</p>
+        <p>Your One-Time Password (OTP) is: <strong>{otp}</strong></p>
+        <p>Please use this to verify your email.</p>
+        """
+    )
     try:
-        message = Mail(
-            from_email=SENDER_EMAIL,
-            to_emails=email,
-            subject="Your OTP Code",
-            plain_text_content=f"Your OTP for Learning Buddy is: {otp}"
-        )
         sg = SendGridAPIClient(SENDGRID_API_KEY)
         response = sg.send(message)
-
-        st.write("📬 SendGrid STATUS:", response.status_code)
-        st.write("📬 SendGrid HEADERS:", response.headers)
-
+        print(f"SendGrid response: {response.status_code}, body: {response.body}, headers: {response.headers}")
         return response.status_code == 202
-
     except Exception as e:
-        st.error("SendGrid Failed:")
-        st.write(e)  # ← this shows exact root cause
+        print(f"SendGrid Error: {e}")
         return False
-
 
 def send_password_email(to_email, password):
     message = Mail(
@@ -85,7 +83,6 @@ def show_auth_page():
     with open("style.css") as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
         # 🔁 When Forgot Password → Back to Sign In:
-        
 
     if "page" not in st.session_state:
         st.session_state.page = "auth"
@@ -227,7 +224,12 @@ def show_auth_page():
                         if password == confirm:
                             try:
                                 otp = generate_otp()
-                                if send_otp_email(email, otp):
+                                users_ref = db.collection("users")
+                                existing_user = next(users_ref.where("email", "==", email).limit(1).stream(), None)
+                                if existing_user:
+
+                                    st.error("⚠️ Email already registered.")
+                                else:
                                     db.collection("users").add({
                                         "full_name": name,
                                         "email": email,
@@ -238,12 +240,13 @@ def show_auth_page():
                                         "study_streak": 0,
                                         "last_login_date": None
                                     })
-                                    st.success("🎉 Account created! OTP sent to your email.")
-                                    st.session_state.verification_email = email
-                                    st.session_state.show_verification = True
-                                else:
-                                    st.error("❌ Failed to send OTP. Please try again.")
 
+                                    if send_otp_email(email, otp):
+                                        st.success("🎉 Account created! OTP sent to your email.")
+                                        st.session_state.verification_email = email
+                                        st.session_state.show_verification = True
+                                    else:
+                                        st.error("❌ Failed to send OTP.")
                             except Exception as e:
                                 st.error(f"🔥 Firebase error: {e}")
                         else:
