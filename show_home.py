@@ -1,28 +1,33 @@
-import os
-import json
-import uuid
-import tempfile
-import html
-from datetime import datetime, timedelta, date
-from urllib.parse import unquote
 
-import pandas as pd
-import streamlit as st
-import streamlit.components.v1 as components
 import plotly.graph_objects as go
 import plotly.express as px
-from fpdf import FPDF
-
-from google.cloud import firestore
-
-from firebase_config import db
+from datetime import datetime, timedelta
+import pandas as pd
 from quiz_generator import generate_quiz
 from flash_cards_gen import generate_flashcards
+import streamlit as st
+import json
+from saved_db import save_quiz_attempt
+import json
+from datetime import datetime
 from saved_db import save_quiz_attempt, get_attempts_for_user
+# --- Handle Profile Actions via Query Params ---
+from urllib.parse import unquote
+import streamlit.components.v1 as components
+import html
+from fpdf import FPDF
+import tempfile
+import os
+from firebase_config import db
+import uuid
 from show_friends import show_friends_page
 from friends_list import get_friends_list
+from firebase_config import db
+from datetime import datetime
+import json
+import streamlit as st
 # Main content area
-db = firestore.Client()
+
 def show_home():
     # --- CSS Styling ---
     st.markdown("""
@@ -573,7 +578,7 @@ def show_generate_quiz():
                         "percentage": f"{percentage:.2f}%",
                         "questions": st.session_state.quiz_data,
                         "answers": st.session_state.user_answers,
-                        "attempted_at": datetime.now().isoformat()
+                        "attempted_at": datetime.now()
                     }
 
                     try:
@@ -694,14 +699,13 @@ def build_mindmap_html(node, include_summaries, prefix="node"):
             <strong>📖 Content:</strong> {content}<br>
             {"<em>💡 Summary:</em> " + summary if include_summaries and summary else ""}
         </div>
-    """)  # ✅ THIS LINE closes the f-string properly
-    
+    """)
+
     if "children" in node:
         for i, child in enumerate(node["children"]):
             html_parts.append(build_mindmap_html(child, include_summaries, f"{prefix}-{i}"))
-    
-    return "\n".join(html_parts)
 
+    return "\n".join(html_parts)
 
 
 def show_flashcards():
@@ -1110,6 +1114,8 @@ def show_saved_content():
         color: white !important;
     }
 
+                
+
         .generate-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
@@ -1168,6 +1174,7 @@ def show_saved_content():
         for page in pages:
             if st.button(page, key=page, use_container_width=True):
                 st.session_state.current_page = page.split(' ', 1)[1]
+
     col1, col2 = st.columns([4, 1])
    
     with col1:
@@ -1181,11 +1188,7 @@ def show_saved_content():
             st.session_state.current_page = 'Home'
 
     user_id = st.session_state.get("user_id")
-    if not user_id:
-        st.error("❌ User ID not found in session. Please log in again.")
-        return
-
-    '''user_name = st.session_state.get("user_name")
+    user_name = st.session_state.get("user_name")
     user_email = st.session_state.get("user_email")
 
     # 🔒 Handle unsaved quiz attempt first
@@ -1216,9 +1219,9 @@ def show_saved_content():
     # ✅ Load saved attempts from Firestore
     try:
         query = db.collection("quiz_attempts") \
-          .where("user_id", "==", user_id) \
-          .order_by("attempted_at", direction="DESCENDING") \
-          .stream()
+                  .where("user_id", "==", user_id) \
+                  .order_by("attempted_at", direction="DESCENDING") \
+                  .stream()
         attempts = [doc.to_dict() for doc in query]
     except Exception as e:
         st.error(f"⚠️ Failed to load attempts: {e}")
@@ -1268,97 +1271,7 @@ def show_saved_content():
                 st.markdown(f"- **Correct Answer:** {correct_ans}")
                 st.markdown(f"- **Result:** {result}")
                 st.markdown(f"- **Explanation:** {explanation}")
-                st.markdown("---")'''
-    user_id = st.session_state.get("user_id")
-    if not user_id:
-        st.error("❌ User ID not found in session. Please log in again.")
-        return
-
-    user_name = st.session_state.get("user_name")
-    user_email = st.session_state.get("user_email")
-
-    # 🔒 Save last unsaved attempt if present
-    if 'last_attempt' in st.session_state:
-        st.warning("📌 You have an unsaved quiz attempt.")
-        if st.button("💾 Save Last Attempt to Database"):
-            try:
-                if not all([user_id, user_name, user_email]):
-                    st.error("❌ Missing user details. Please log in again.")
-                    return
-
-                attempt = st.session_state.last_attempt
-
-                if "attempted_at" not in attempt:
-                    attempt["attempted_at"] = datetime.now()
-                if not attempt.get("topic"):
-                    attempt["topic"] = "Unknown Topic"
-
-                save_quiz_attempt(user_id, user_name, user_email, attempt)
-                st.success("✅ Quiz attempt saved to Firebase!")
-                del st.session_state.last_attempt
-                st.session_state.quiz_count += 1
-                st.rerun()
-            except Exception as e:
-                st.error(f"❌ Failed to save quiz to Firebase: {e}")
-        return
-
-    # ✅ Load all saved attempts from Firestore
-    try:
-        query = db.collection("quiz_attempts") \
-                  .where("user_id", "==", user_id) \
-                  .order_by("attempted_at", direction="DESCENDING") \
-                  .stream()
-        attempts = [doc.to_dict() for doc in query]
-    except Exception as e:
-        st.error(f"⚠️ Failed to load attempts: {e}")
-        return
-
-    if not attempts:
-        st.info("❗ No quizzes attempted yet.")
-        return
-
-    st.subheader("📚 Saved Quizzes")
-    st.caption("Review your previously attempted quizzes here.")
-    
-    for i, quiz in enumerate(attempts):
-        # 🔁 Handle attempted_at formatting
-        attempted_at = quiz.get("attempted_at", "Unknown time")
-        try:
-            attempted_at = datetime.fromisoformat(attempted_at).strftime("%Y-%m-%d %H:%M")
-        except:
-            pass
-    
-        # 🧠 Deserialize JSON strings
-        try:
-            questions = json.loads(quiz.get("questions", "[]"))
-        except:
-            questions = []
-    
-        try:
-            answers = json.loads(quiz.get("answers", "{}"))
-        except:
-            answers = {}
-
-        with st.expander(f"📘 Attempt {i+1}: {quiz.get('topic', 'N/A')} | Score: {quiz.get('score', '0/0')}"):
-            st.markdown(f"**📝 Topic:** {quiz.get('topic', 'Unknown')}")            
-            st.markdown(f"**🎯 Difficulty:** {quiz.get('difficulty', 'Unknown')}")  
-            st.markdown(f"**🏆 Score:** {quiz.get('score', '0/0')} ({quiz.get('percentage', '0%')})")
-            st.markdown(f"**🕒 Attempted At:** {time}")
-            st.markdown("---")
-
-            for idx, q in enumerate(questions):
-                user_ans = answers.get(str(idx), "Not Answered")
-                correct_ans = q.get("correct_answer", "N/A")
-                explanation = q.get("explanation") or "No explanation available"
-                result = "✅ Correct!" if user_ans == correct_ans else "❌ Incorrect"
-
-                st.markdown(f"**Q{idx+1}:** {q.get('question', 'N/A')}")
-                st.markdown(f"- **Your Answer:** {user_ans}")
-                st.markdown(f"- **Correct Answer:** {correct_ans}")
-                st.markdown(f"- **Result:** {result}")
-                st.markdown(f"- **Explanation:** {explanation}")
                 st.markdown("---")
-
     # Footer
     st.markdown("---")
     st.markdown(
@@ -1367,7 +1280,6 @@ def show_saved_content():
         '</div>', 
         unsafe_allow_html=True
     )
-
 
 def show_profile():
     # Custom CSS for styling
