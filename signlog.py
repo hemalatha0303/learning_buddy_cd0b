@@ -42,7 +42,14 @@ def send_otp_email(email, otp):
             from_email=st.secrets["sendgrid"]["SENDER_EMAIL"],
             to_emails=email,
             subject="Your OTP Code",
-            plain_text_content=f"Your OTP is: {otp}"
+            plain_text_content=f"""Hi there,
+            
+            Your OTP for Learning Buddy is: {otp}
+            
+            Please enter this code to verify your email.
+            
+            Thanks,
+            The Learning Buddy Team"""
         )
         sg = SendGridAPIClient(st.secrets["sendgrid"]["SENDGRID_API_KEY"])
         response = sg.send(message)
