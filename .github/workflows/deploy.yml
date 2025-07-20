@@ -11,6 +11,8 @@ jobs:
 
     env:
       SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+      SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+
 
     steps:
       - name: Checkout Code
