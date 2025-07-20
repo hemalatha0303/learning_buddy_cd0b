@@ -1328,32 +1328,25 @@ def show_saved_content():
 
     st.subheader("📚 Saved Quizzes")
     st.caption("Review your previously attempted quizzes here.")
-
+    
     for i, quiz in enumerate(attempts):
-        # ⏱️ Format datetime properly
-        time = quiz.get("attempted_at")
-        if isinstance(time, datetime):
-            time = time.strftime("%Y-%m-%d %H:%M")
-        elif isinstance(time, str):
-            try:
-                time = datetime.fromisoformat(time).strftime("%Y-%m-%d %H:%M")
-            except:
-                pass
-
-        # 🧠 Parse questions + answers
-        questions = quiz.get("questions", [])
-        if isinstance(questions, str):
-            try:
-                questions = json.loads(questions)
-            except:
-                questions = []
-
-        answers = quiz.get("answers", {})
-        if isinstance(answers, str):
-            try:
-                answers = json.loads(answers)
-            except:
-                answers = {}
+        # 🔁 Handle attempted_at formatting
+        attempted_at = quiz.get("attempted_at", "Unknown time")
+        try:
+            attempted_at = datetime.fromisoformat(attempted_at).strftime("%Y-%m-%d %H:%M")
+        except:
+            pass
+    
+        # 🧠 Deserialize JSON strings
+        try:
+            questions = json.loads(quiz.get("questions", "[]"))
+        except:
+            questions = []
+    
+        try:
+            answers = json.loads(quiz.get("answers", "{}"))
+        except:
+            answers = {}
 
         with st.expander(f"📘 Attempt {i+1}: {quiz.get('topic', 'N/A')} | Score: {quiz.get('score', '0/0')}"):
             st.markdown(f"**📝 Topic:** {quiz.get('topic', 'Unknown')}")            
