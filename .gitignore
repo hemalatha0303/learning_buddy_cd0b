@@ -5,7 +5,6 @@
 gen_flashcards.py
 
 firebase_credentials.json
-.env
 __pycache__/
 *.pyc
 .venv/
