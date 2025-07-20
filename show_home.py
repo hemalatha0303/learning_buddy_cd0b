@@ -580,7 +580,7 @@ def show_generate_quiz():
                         "percentage": f"{percentage:.2f}%",
                         "questions": st.session_state.quiz_data,
                         "answers": st.session_state.user_answers,
-                        "attempted_at": datetime.now()
+                        "attempted_at": datetime.now().isoformat()
                     }
 
                     try:
