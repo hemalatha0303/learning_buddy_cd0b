@@ -8,7 +8,6 @@ from flash_cards_gen import generate_flashcards
 import streamlit as st
 from datetime import date
 import streamlit as st
-import json
 from google.cloud import firestore
 from datetime import datetime
 import json
@@ -35,7 +34,6 @@ import streamlit as st
 db = firestore.Client()
 def show_home():
     # --- CSS Styling ---
-    from signlog import show_auth_page
     st.markdown("""
     <style>
         .stApp {
