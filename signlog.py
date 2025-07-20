@@ -1,5 +1,5 @@
-# signlog.py
 import streamlit as st
+import os
 import uuid
 from datetime import datetime, timedelta
 from sendgrid import SendGridAPIClient
@@ -7,14 +7,15 @@ from sendgrid.helpers.mail import Mail
 from firebase_admin import firestore
 from firebase_config import db
 
-# Constants
-SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY") or st.secrets["sendgrid"]["SENDGRID_API_KEY"]
-SENDER_EMAIL = os.getenv("SENDER_EMAIL") or st.secrets["sendgrid"]["SENDER_EMAIL"]
+# --- Secret Loading (Supports Both Local & GitHub)
+SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY") or st.secrets["SENDGRID_API_KEY"]
+SENDER_EMAIL = os.getenv("SENDER_EMAIL") or st.secrets["SENDER_EMAIL"]
 
-# --- OTP Utilities ---
+# --- OTP Generator
 def generate_otp():
     return str(uuid.uuid4())[:6].upper()
-    
+
+# --- Send OTP Email
 def send_otp_email(to_email, otp):
     try:
         message = Mail(
@@ -22,43 +23,41 @@ def send_otp_email(to_email, otp):
             to_emails=to_email,
             subject="Your OTP for AI Quiz Generator",
             html_content=f"""
-            <p>Hello!</p>
-            <p>Your One-Time Password (OTP) is: <strong>{otp}</strong></p>
-            <p>Please use this to verify your email.</p>
+                <p>Hello!</p>
+                <p>Your One-Time Password (OTP) is: <strong>{otp}</strong></p>
+                <p>Please use this to verify your email.</p>
             """
         )
         sg = SendGridAPIClient(SENDGRID_API_KEY)
         response = sg.send(message)
-        st.write("📬 SendGrid Response Code:", response.status_code)
-        st.write("📬 Response Body:", response.body)
-        st.write("📬 Headers:", response.headers)
-
+        st.write("📬 SendGrid Status:", response.status_code)
         return response.status_code == 202
     except Exception as e:
-        st.error("🚨 SendGrid Exception")
+        st.error("❌ OTP Sending Failed:")
         st.exception(e)
         return False
 
+# --- Send Password Reminder
 def send_password_email(to_email, password):
-    message = Mail(
-        from_email=SENDER_EMAIL,
-        to_emails=to_email,
-        subject="🔐 Your Learning Buddy Password",
-        html_content=f"""
-        <p>Hello!</p>
-        <p>Your password is: <strong>{password}</strong></p>
-        <p>Please use this to log in and keep it secure.</p>
-        """
-    )
     try:
+        message = Mail(
+            from_email=SENDER_EMAIL,
+            to_emails=to_email,
+            subject="🔐 Your Learning Buddy Password",
+            html_content=f"""
+                <p>Hello!</p>
+                <p>Your password is: <strong>{password}</strong></p>
+                <p>Keep it secure!</p>
+            """
+        )
         sg = SendGridAPIClient(SENDGRID_API_KEY)
         response = sg.send(message)
         return response.status_code == 202
     except Exception as e:
-        print(f"SendGrid Error: {e}")
+        print("SendGrid Error:", e)
         return False
 
-# --- Main Auth Page ---
+# --- Auth Page
 def show_auth_page():
     st.markdown('<div class="bg-animation"></div>', unsafe_allow_html=True)
     with open("style.css") as f:
@@ -83,6 +82,7 @@ def show_auth_page():
             st.markdown("## 👋 Welcome Back!")
             tab1, tab2 = st.tabs(["🔑 Sign In", "👤 Sign Up"])
 
+            # --- Sign In
             with tab1:
                 st.text_input("📧 Email", key="signin_email")
                 st.text_input("🔐 Password", type="password", key="signin_password")
@@ -133,6 +133,7 @@ def show_auth_page():
                         except Exception as e:
                             st.error(f"🔥 Error: {e}")
 
+            # --- Sign Up
             with tab2:
                 name = st.text_input("👤 Full Name")
                 email = st.text_input("📧 Email")
@@ -169,6 +170,7 @@ def show_auth_page():
                     else:
                         st.error("❗ Please fill all fields and match passwords.")
 
+                # --- Email Verification Step
                 if st.session_state.get("show_verification"):
                     st.markdown("### 🔐 Email Verification")
                     otp_input = st.text_input("Enter OTP")
@@ -187,6 +189,7 @@ def show_auth_page():
                                 st.error("❌ Incorrect OTP.")
                         except Exception as e:
                             st.error(f"🔥 Firebase error: {e}")
+
                     if st.button("🔁 Resend OTP"):
                         try:
                             new_otp = generate_otp()
