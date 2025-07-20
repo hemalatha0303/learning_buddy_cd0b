@@ -38,25 +38,18 @@ def generate_otp():
     return str(uuid.uuid4())[:6].upper()  # 6-char OTP
 
 def send_otp_email(email, otp):
+    message = Mail(
+        from_email="your_email@example.com",
+        to_emails=email,
+        subject="Your OTP Verification Code",
+        html_content=f"<p>Your OTP is: <strong>{otp}</strong></p>",
+    )
     try:
-        message = Mail(
-            from_email=SENDER_EMAIL,
-            to_emails=email,
-            subject="Your OTP Code",
-            plain_text_content=f"Your OTP for Learning Buddy is: {otp}"
-        )
         sg = SendGridAPIClient(SENDGRID_API_KEY)
-        response = sg.send(message)
-
-        st.write("📬 SendGrid STATUS:", response.status_code)
-        st.write("📬 SendGrid HEADERS:", response.headers)
-
-        return response.status_code == 202
-
+        sg.send(message)
     except Exception as e:
-        st.error("SendGrid Failed:")
-        st.write(e)  # ← this shows exact root cause
-        return False
+        st.error("Failed to send OTP. Try again later.")
+
 
 
 def send_password_email(to_email, password):
