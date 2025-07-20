@@ -1,5 +1,5 @@
 # flash_cards_gen.py
-import json5 as json
+import json5
 import re
 from llm_router import FlashcardLLMRouter
 
@@ -62,7 +62,7 @@ def generate_flashcards(text, difficulty, include_summary):
     if not match:
         raise ValueError("⚠️ Failed to parse flashcards from LLM response.")
     try:
-        cards = json.loads(match.group(0))
+        cards = json5.loads(match.group(0))
     except Exception as e:
         raise ValueError(f"⚠️ JSON decoding failed: {e}")
 
