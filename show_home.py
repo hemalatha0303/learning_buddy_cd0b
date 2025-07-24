@@ -1270,24 +1270,6 @@ def show_saved_content():
                 st.markdown(f"- **Explanation:** {explanation}")
                 st.markdown("---")
 
-# ✅ Call this function in your main page or route
-load_saved_quizzes()
-🔁 Ensure This When Saving Quiz to Firebase
-Make sure in your quiz submission code, you're saving this structure:
-
-python
-Copy
-Edit
-db.collection("quiz_attempts").add({
-    "user_id": user_id,
-    "topic": selected_topic,
-    "difficulty": difficulty,
-    "questions": json.dumps(questions),  # serialized
-    "answers": json.dumps(answers),      # serialized
-    "score": f"{correct}/{total}",
-    "percentage": f"{(correct/total)*100:.2f}%",
-    "attempted_at": firestore.SERVER_TIMESTAMP
-})
     # Footer
     st.markdown("---")
     st.markdown(
