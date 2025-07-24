@@ -512,6 +512,7 @@ def show_generate_quiz():
         st.session_state.attempted_quizzes = []
     with st.form("quiz_form"):
         topic = st.text_input("Topic or Concept", placeholder="e.g., Percentages")
+        qtype = st.selectbox("Question Type", ["Multiple Choice"])  # extend later if needed
         difficulty = st.selectbox("Difficulty", ["Easy", "Medium", "Hard"])
         num_questions = st.slider("Number of Questions", 1, 10, 3)
         submit = st.form_submit_button("Generate Quiz")
@@ -572,7 +573,7 @@ def show_generate_quiz():
 
                     st.session_state.last_attempt = {
                         "topic": topic,
-                        "type": "Multiple Choice",
+                        "type": qtype,
                         "difficulty": difficulty,
                         "score": f"{score}/{total}",
                         "percentage": f"{percentage:.2f}%",
