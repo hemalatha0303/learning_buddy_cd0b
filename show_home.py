@@ -1188,23 +1188,15 @@ def show_saved_content():
     user_id = st.session_state.get("user_id")
     user_name = st.session_state.get("user_name")
     user_email = st.session_state.get("user_email")
-
-    # 🔒 Handle unsaved quiz attempt first
+    
+    # Save unsaved attempt if exists
     if 'last_attempt' in st.session_state:
         st.warning("📌 You have an unsaved quiz attempt.")
         if st.button("💾 Save Last Attempt to Database"):
             try:
-                if not all([user_id, user_name, user_email]):
-                    st.error("❌ Missing user details. Please log in again.")
-                    return
-
                 attempt = st.session_state.last_attempt
                 if "attempted_at" not in attempt:
                     attempt["attempted_at"] = datetime.now()
-                if not attempt.get("topic"):
-                    attempt["topic"] = "Unknown Topic"
-
-                # Save to Firebase
                 save_quiz_attempt(user_id, user_name, user_email, attempt)
                 st.success("✅ Quiz attempt saved to Firebase!")
                 del st.session_state.last_attempt
@@ -1213,62 +1205,41 @@ def show_saved_content():
             except Exception as e:
                 st.error(f"❌ Failed to save quiz to Firebase: {e}")
         return
-
-    # ✅ Load saved attempts from Firestore
-    try:
-        query = db.collection("quiz_attempts") \
-            .where("user_id", "==", user_id) \
-            .order_by("attempted_at", direction=firestore.Query.DESCENDING) \
-            .stream()
-        attempts = [doc.to_dict() for doc in query]
-    except Exception as e:
-        st.error(f"⚠️ Failed to load attempts: {e}")
-        return
-
+    
+    # ✅ Load saved quizzes
+    attempts = get_attempts_for_user(user_id)
     if not attempts:
         st.info("❗ No quizzes attempted yet.")
         return
-
+    
     st.subheader("📘 Saved Quiz Attempts")
-    st.caption("You can review your previous quiz answers and explanations here.")
-
+    st.caption("Review your previous quiz answers and explanations.")
+    
     for i, quiz in enumerate(attempts):
-        # Deserialize questions and answers if needed
         questions = quiz.get("questions", [])
-        if isinstance(questions, str):
-            try:
-                questions = json.loads(questions)
-            except:
-                questions = []
-
         answers = quiz.get("answers", {})
-        if isinstance(answers, str):
-            try:
-                answers = json.loads(answers)
-            except:
-                answers = {}
-
-        attempted_at = quiz.get("attempted_at", "⏰ Unknown")
-
+        attempted_at = quiz.get("attempted_at", "Unknown")
+    
         with st.expander(f"📘 Attempt {i+1}: {quiz.get('topic', 'N/A')} | Score: {quiz.get('score', '0/0')}"):
             st.markdown(f"**📝 Topic:** {quiz.get('topic', 'Unknown')}")
             st.markdown(f"**🎯 Difficulty:** {quiz.get('difficulty', 'Unknown')}")
             st.markdown(f"**🏆 Score:** {quiz.get('score', '0/0')} ({quiz.get('percentage', '0%')})")
             st.markdown(f"**🕒 Attempted At:** {attempted_at}")
             st.markdown("---")
-
+    
             for idx, q in enumerate(questions):
                 user_ans = answers.get(str(idx), "Not Answered")
                 correct_ans = q.get("correct_answer", "N/A")
-                explanation = q.get("explanation") or "No explanation provided"
+                explanation = q.get("explanation", "No explanation provided")
                 result = "✅ Correct" if user_ans == correct_ans else "❌ Incorrect"
-
+    
                 st.markdown(f"**Q{idx+1}:** {q.get('question', 'Missing Question')}")
                 st.markdown(f"- **Your Answer:** {user_ans}")
                 st.markdown(f"- **Correct Answer:** {correct_ans}")
                 st.markdown(f"- **Result:** {result}")
                 st.markdown(f"- **Explanation:** {explanation}")
                 st.markdown("---")
+
 
     # Footer
     st.markdown("---")
