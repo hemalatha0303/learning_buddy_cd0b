@@ -1270,7 +1270,6 @@ def show_saved_content():
                 st.markdown(f"- **Result:** {result}")
                 st.markdown(f"- **Explanation:** {explanation}")
                 st.markdown("---")
-
     # Footer
     st.markdown("---")
     st.markdown(
