@@ -1228,7 +1228,7 @@ def show_saved_content():
                   .where("user_id", "==", user_id) \
                   .order_by("attempted_at", direction="DESCENDING") \
                   .stream()
-        attempts = [doc.to_dict() for doc in query]
+        attempts = [doc.to_dict() for doc in list(query)]
     except Exception as e:
         st.error(f"⚠️ Failed to load attempts: {e}")
         return
