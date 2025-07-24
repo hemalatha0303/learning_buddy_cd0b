@@ -519,13 +519,16 @@ def show_generate_quiz():
     if submit:
         with st.spinner("Generating quiz..."):
             try:
-                quiz_data = generate_quiz(topic, "Multiple Choice", difficulty, num_questions)
-                st.session_state.quiz_data = quiz_data
-                st.session_state.user_answers = {}
-                st.session_state.show_answers = False
-                st.success("✅ Quiz generated successfully!")
+                quiz = generate_quiz(topic, qtype, difficulty, num_questions)
+                for i, q in enumerate(quiz, start=1):
+                    st.markdown(f"**Q{i}: {q['question']}**")
+                    for opt in q["options"]:
+                        st.markdown(f"- {opt}")
+                    st.markdown(f"✅ **Answer:** {q['correct_answer']}")
+                    st.markdown(f"🧠 _Explanation_: {q['explanation']}")
+                    st.divider()
             except Exception as e:
-                st.error(f"❌ Quiz generation failed: {e}")
+                st.error(f"❌ {e}")
 
     if st.session_state.get("quiz_data"):
         st.subheader("📝 Quiz Time")
