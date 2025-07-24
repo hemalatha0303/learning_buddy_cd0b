@@ -16,41 +16,31 @@ llm = ChatTogether(
 )
 
 def generate_quiz(topic, qtype, difficulty, num_questions):
-        prompt = f"""
-            You are an expert quiz generator for programming and computer science concepts.
-            
-            🎯 OBJECTIVE:
-            Generate exactly {num_questions} high-quality multiple-choice questions on the topic: "{topic}", targeting a {difficulty} level audience.
-            
-            📌 QUESTION TYPE: {qtype}
-            Each question must:
-            - Focus on a distinct concept or common misconception.
-            - Be unambiguous, technically accurate, and clearly worded.
-            - Avoid overlap between questions.
-            
-            📌 OPTIONS:
-            - Provide 4 plausible, non-redundant answer choices.
-            - Only ONE correct answer (must be one of the options).
-            - Use realistic distractors.
-            - Mix theoretical and code-based questions.
-            
-            📌 EXPLANATION:
-            - For each question, include a short explanation for the correct answer.
-            - Explain why it's right and, briefly, why others are wrong if relevant.
-            
-            ⚠️ FORMAT RULES:
-            Return ONLY a valid JSON array with this structure:
-            [
-              {{
-                "question": "Your question here?",
-                "options": ["Option A", "Option B", "Option C", "Option D"],
-                "correct_answer": "Option A",
-                "explanation": "Short explanation here."
-              }},
-              ...
-            ]
-            Strictly return ONLY JSON. No markdown, titles, quotes, or extra text.
-            Ensure JSON is fully closed, properly escaped, and parsable.
+    prompt = f"""
+        You are an expert quiz generator. Return ONLY a **valid JSON array** — no markdown, no comments, no extra text.
+
+        🎯 TASK:
+        Generate exactly {num_questions} multiple-choice quiz questions (type: {qtype}, difficulty: {difficulty}) on the topic: "{topic}".
+
+        🧠 RULES:
+        - Each question must be clear, factually correct, and unambiguous.
+        - Provide 4 diverse and plausible options per question.
+        - Ensure the correct_answer is 100% present in the options.
+        - Add a concise explanation that justifies the correct answer.
+        - Avoid duplicates or vague phrasing.
+
+        📦 JSON FORMAT (strictly):
+        [
+        {{
+            "question": "What is ...?",
+            "options": ["Option A", "Option B", "Option C", "Option D"],
+            "correct_answer": "Option B",
+            "explanation": "Explanation for why Option B is correct."
+        }},
+        ...
+        ]
+
+        ⚠️ DO NOT return any preamble, markdown, or notes — only a valid JSON array.
     """
 
 
