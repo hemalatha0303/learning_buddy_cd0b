@@ -17,31 +17,38 @@ llm = ChatTogether(
 
 def generate_quiz(topic, qtype, difficulty, num_questions):
     prompt = f"""
-        You are an expert quiz generator. Return ONLY a **valid JSON array** — no markdown, no comments, no extra text.
-
+        You are a professional quiz generator.
+        
         🎯 TASK:
-        Generate exactly {num_questions} multiple-choice quiz questions (type: {qtype}, difficulty: {difficulty}) on the topic: "{topic}".
-
-        🧠 RULES:
-        - Each question must be clear, factually correct, and unambiguous.
-        - Provide 4 diverse and plausible options per question.
-        - Ensure the correct_answer is 100% present in the options.
-        - Add a concise explanation that justifies the correct answer.
-        - Avoid duplicates or vague phrasing.
-
-        📦 JSON FORMAT (strictly):
+        Generate exactly {num_questions} multiple-choice questions on the topic "{topic}".
+        Each question should:
+        - Match the type: {qtype}
+        - Match the difficulty: {difficulty}
+        - Be clear, accurate, and not vague
+        - Include exactly 4 diverse and logical answer options
+        
+        ✅ REQUIREMENTS:
+        - The correct answer **must be one of the 4 options**
+        - Provide a brief and factual explanation (max 30 words)
+        - Ensure technical correctness (no hallucinations or generalizations)
+        - No duplicates. No jokes. No trivia. No pop culture.
+        - Focus only on the topic: **{topic}**
+        
+        🧠 FORMAT (Strict JSON):
         [
-        {{
-            "question": "What is ...?",
+          {{
+            "question": "Your question here?",
             "options": ["Option A", "Option B", "Option C", "Option D"],
-            "correct_answer": "Option B",
-            "explanation": "Explanation for why Option B is correct."
-        }},
-        ...
+            "correct_answer": "Exact match of one of the options above",
+            "explanation": "Why this answer is correct"
+          }},
+          ...
         ]
-
-        ⚠️ DO NOT return any preamble, markdown, or notes — only a valid JSON array.
-    """
+        
+        ⚠️ CRITICAL:
+        - Return only raw JSON (no markdown, no text)
+        - Validate JSON before submitting
+        """
 
 
     response = llm.invoke([HumanMessage(content=prompt)], config={"timeout": 30})
