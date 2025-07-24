@@ -1,21 +1,3 @@
-import os
-import json
-import streamlit as st
-import random
-from langchain.schema import HumanMessage
-from langchain_together import ChatTogether
-
-# 🔐 Set API Key for Together API
-os.environ["OPENAI_API_KEY"] = st.secrets["together"]["TOGETHER_API_KEY"]
-
-# ⚙️ Initialize the Together LLM
-llm = ChatTogether(
-    model="mistralai/Mistral-7B-Instruct-v0.1",
-    temperature=0.2,
-    together_api_key=st.secrets["together"]["TOGETHER_API_KEY"]
-)
-
-# 🚀 Quiz Generator
 def generate_quiz(topic, qtype, difficulty, num_questions):
     prompt = f"""
 You are an expert quiz generator for programming and computer science concepts.
@@ -30,7 +12,7 @@ Each question must:
 - Avoid overlap between questions.
 
 📌 OPTIONS:
-- Provide 4 plausible, non-redundant answer choices.
+- Provide exactly 4 plausible, non-redundant answer choices.
 - Only ONE correct answer (must be one of the options).
 - Use realistic distractors.
 - Mix theoretical and code-based questions.
@@ -63,21 +45,38 @@ Ensure JSON is fully closed, properly escaped, and parsable.
         if content.startswith("```") or "```json" in content:
             content = content.split("```")[-2].strip()
         quiz_data = json.loads(content)
-    except Exception:
-        raise ValueError("❌ Quiz generation failed: Invalid JSON returned by LLM.")
+    except Exception as e:
+        raise ValueError("❌ Quiz generation failed: Invalid JSON returned by LLM.") from e
 
-    # 🔍 Validate Structure
+    # 🧹 Validate & Auto-fix
+    clean_data = []
     for i, item in enumerate(quiz_data):
-        required_keys = {"question", "options", "correct_answer", "explanation"}
-        if not required_keys.issubset(item):
-            raise ValueError(f"❌ Q{i+1} missing keys: {required_keys - set(item.keys())}")
+        if not all(k in item for k in ["question", "options", "correct_answer", "explanation"]):
+            raise ValueError(f"❌ Q{i+1} missing required keys.")
 
-        if len(item["options"]) != 4:
-            raise ValueError(f"❌ Q{i+1} must have 4 options")
+        options = item["options"]
+        correct = item["correct_answer"]
 
-        if item["correct_answer"] not in item["options"]:
-            # Auto-correct answer placement
-            item["options"][-1] = item["correct_answer"]
-            random.shuffle(item["options"])
+        # 🔁 Fix wrong number of options
+        if len(options) != 4:
+            options = list(set(options))  # Remove duplicates
+            if correct not in options:
+                options.append(correct)
+            while len(options) < 4:
+                options.append(f"Option {chr(65 + len(options))}")
+            options = options[:4]
+            random.shuffle(options)
+        
+        # ✅ Enforce correct answer inside options
+        if correct not in options:
+            options[-1] = correct
+            random.shuffle(options)
 
-    return quiz_data
+        clean_data.append({
+            "question": item["question"],
+            "options": options,
+            "correct_answer": correct,
+            "explanation": item["explanation"]
+        })
+
+    return clean_data
