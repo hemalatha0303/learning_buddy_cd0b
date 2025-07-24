@@ -5,54 +5,58 @@ from llm_router import FlashcardLLMRouter
 
 def generate_flashcards(text, difficulty, include_summary):
     summary_instruction = (
-        " Include a one-line summary if possible."
-        if include_summary else ""
+    " Include a one-line summary if possible."
+    if include_summary else ""
     )
-
+    
     prompt = f"""
     You are an intelligent learning assistant. 
     Based on the user's request below, decide the most helpful format:
     
-    1. If the request includes a **broad concept or topic** (like "Machine Learning models", "Cloud Computing", "Software Development Life Cycle"), respond using a **mind map** with main node and subtopics (with explanations and optional summaries).
+    1. If the request includes a **broad concept or topic** (like "Machine Learning models", "Cloud Computing", "Software Development Life Cycle"), respond using a **mind map** with main node and multiple rich subtopics (with **in-depth explanations**, **examples**, and **historical or real-world context** where appropriate). Each subtopic must be at least 3-5 sentences, and cover **nuances, impacts, and key facts**. You must extract and include **as many relevant subtopics as needed**.
     
-    2. If the request is a **direct question or small prompt** (like "Tell me a moral story", "What is Python?", or "Explain AI vs ML"), return **just one flashcard** with detailed explanation.
+    2. If the request is a **direct question or small prompt** (like "Tell me a moral story", "What is Python?", or "Explain AI vs ML"), return **just one flashcard** with **a comprehensive, multi-paragraph answer**. Be **detailed, educational, and thorough**.
     
-    Important: If the user says “What are the types of ___” or “List types of ___”, treat it as a topic for a **mind map**, not a single answer.
-
+    Important:
+    - If the user says “What are the types of ___” or “List types of ___”, treat it as a topic for a **mind map**.
+    - Never give minimal output. Always expand based on user input.
+    
     Include these fields:
     - "question": restate the user's prompt.
-    - "answer": give a clear, complete, human-friendly response.
+    - "answer": a rich, clear, multi-paragraph response that fully educates the reader.
     - "summary": (optional) short 1-line key idea.
-    - Always prioritize clarity and depth. Elaborate on each subtopic with multiple sentences, historical context, examples, and real-world relevance.
+    
     User Request:
     {text}
-
+    
     Return JSON in one of the following formats:
-
+    
     ### For mind-map:
     [
       {{
         "node": "Main Concept",
-        "content": "Optional brief intro to topic",
+        "content": "Provide a strong, paragraph-length overview of the topic, setting context.",
         "children": [
           {{
             "node": "Subtopic",
-            "content": "Explanation here",
+            "content": "3–6 sentence detailed explanation, including examples, insights, data, or impact. Go deep and be comprehensive.",
             "summary": "optional short summary"
-          }}
+          }},
+          ...
         ]
       }}
     ]
-
+    
     ### For single flashcard:
     [
       {{
         "question": "User question rephrased",
-        "answer": "Provide a comprehensive, beginner-friendly explanation with examples, context, and analogies where helpful. Go beyond definitions and aim to teach the concept clearly.",
+        "answer": "Write a detailed, multi-paragraph educational explanation covering all aspects of the question, including examples and implications.",
         "summary": "optional short summary"
       }}
     ]
     """
+
 
     # 🔁 Call the LLM
     content = FlashcardLLMRouter.generate(prompt)
