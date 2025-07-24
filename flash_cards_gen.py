@@ -12,18 +12,18 @@ def generate_flashcards(text, difficulty, include_summary):
     prompt = f"""
     You are an intelligent learning assistant. 
     Based on the user's request below, decide the most helpful format:
-
+    
     1. If the request includes a **broad concept or topic** (like "Machine Learning models", "Cloud Computing", "Software Development Life Cycle"), respond using a **mind map** with main node and subtopics (with explanations and optional summaries).
-
+    
     2. If the request is a **direct question or small prompt** (like "Tell me a moral story", "What is Python?", or "Explain AI vs ML"), return **just one flashcard** with detailed explanation.
-
+    
     Important: If the user says “What are the types of ___” or “List types of ___”, treat it as a topic for a **mind map**, not a single answer.
 
     Include these fields:
     - "question": restate the user's prompt.
     - "answer": give a clear, complete, human-friendly response.
     - "summary": (optional) short 1-line key idea.
-
+    - Always prioritize clarity and depth. Elaborate on each subtopic with multiple sentences, historical context, examples, and real-world relevance.
     User Request:
     {text}
 
@@ -48,7 +48,7 @@ def generate_flashcards(text, difficulty, include_summary):
     [
       {{
         "question": "User question rephrased",
-        "answer": "Your answer here",
+        "answer": "Provide a comprehensive, beginner-friendly explanation with examples, context, and analogies where helpful. Go beyond definitions and aim to teach the concept clearly.",
         "summary": "optional short summary"
       }}
     ]
