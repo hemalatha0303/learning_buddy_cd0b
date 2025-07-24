@@ -900,7 +900,6 @@ def show_flashcards():
                 st.session_state.current_page = page.split(' ', 1)[1]
 
     col1, col2 = st.columns([4,1])
-    
     with col1:
         st.markdown('<div class="welcome-header" style="color:#ffffff; text-shadow: 0 0 10px #C66727;">Flashcards</div>', unsafe_allow_html=True)
         st.markdown('<div class="welcome-subtext" style="color:#ffffff; text-shadow: 0 0 10px #C66727;">Review and practice with interactive flashcards.</div>', unsafe_allow_html=True)
@@ -910,96 +909,63 @@ def show_flashcards():
             st.session_state.page = 'landing'
             st.session_state.signed_in = False
             st.session_state.current_page = 'Home'
-    # Flashcard Main Trigger
-    if "flashcard_mode" not in st.session_state:
-        st.session_state.flashcard_mode = None
-    
-    if st.button("📘 Show Flashcards", use_container_width=True):
-        st.session_state.flashcard_mode = None  # reset view
-    
-    if st.session_state.flashcard_mode is None:
-        st.markdown("### What would you like to do?")
+    # Flashcard form
+    with st.form("flashcard_form"):
+        text = st.text_area("Enter your source material:", height=150)
         col1, col2 = st.columns(2)
+        
         with col1:
-            if st.button("🧠 Generate New Concept", use_container_width=True):
-                st.session_state.flashcard_mode = "new_concept"
-        with col2:
-            if st.button("📄 Upload Content", use_container_width=True):
-                st.session_state.flashcard_mode = "upload_pdf"
-    
-    # ✅ Option 1: Generate from Text Input
-    if st.session_state.flashcard_mode == "new_concept":
-        with st.form("flashcard_form_text"):
-            text = st.text_area("Enter your source material:", height=150)
             difficulty = st.selectbox("Difficulty", ["Easy", "Medium", "Hard"])
-            include_summaries = st.toggle("Include Summaries", value=True)
-            submitted = st.form_submit_button("Generate Flashcards")
-            if submitted:
-                with st.spinner("Generating content for you..."):
-                    try:
-                        cards = generate_flashcards(text, difficulty, include_summaries)
-                        st.session_state.generated_flashcards = cards
-                        st.session_state.include_summaries = include_summaries
-                        st.success(f"{len(cards)} flashcards generated successfully!")
-                    except Exception as e:
-                        st.error(f"❌ Error: {e}")
-    
-    # ✅ Option 2: Upload PDF and Custom Prompt
-    elif st.session_state.flashcard_mode == "upload_pdf":
-        uploaded_file = st.file_uploader("Upload your PDF file", type="pdf")
-        custom_prompt = st.text_area("What do you want extracted as flashcards?", height=100)
-        difficulty = st.selectbox("Difficulty", ["Easy", "Medium", "Hard"])
         include_summaries = st.toggle("Include Summaries", value=True)
-        if st.button("Generate Flashcards from PDF"):
-            if uploaded_file and custom_prompt.strip():
-                with st.spinner("Reading and processing PDF..."):
-                    try:
-                        import PyPDF2
-                        reader = PyPDF2.PdfReader(uploaded_file)
-                        full_text = " ".join([page.extract_text() for page in reader.pages if page.extract_text()])
-                        combined_input = f"{custom_prompt}\n\n{full_text}"
-                        cards = generate_flashcards(combined_input, difficulty, include_summaries)
-                        st.session_state.generated_flashcards = cards
-                        st.session_state.include_summaries = include_summaries
-                        st.success(f"{len(cards)} flashcards generated from uploaded content!")
-                    except Exception as e:
-                        st.error(f"❌ Failed to extract or generate: {e}")
-            else:
-                st.warning("Please upload a PDF and specify what you want extracted.")
-    
-    # 🧠 Flashcard Display + PDF
+        submitted = st.form_submit_button("Generate Content")
+
+        if submitted:
+            with st.spinner("Generating content for you..."):
+                try:
+                    cards = generate_flashcards(text, difficulty, include_summaries)
+                    st.session_state.generated_flashcards = cards
+                    st.session_state.include_summaries = include_summaries
+                    st.success(f"{len(cards)} flashcards generated successfully!")
+                except Exception as e:
+                    st.error(f"❌ Error: {e}")
+
     cards = st.session_state.generated_flashcards
     include_summaries = st.session_state.include_summaries
-    
+
     if cards:
-        first = cards[0]
-        if "node" in first:
-            st.markdown(f"<div class='section-header'> {first['node']}</div>", unsafe_allow_html=True)
-            if first.get("content"):
-                st.info(first["content"])
-            for idx, child in enumerate(first.get("children", [])):
-                key = f"show_child_{idx}"
-                with st.expander(f"🔹 {child['node']}", expanded=st.session_state.get(key, False)):
-                    st.session_state[key] = True
-                    st.markdown(f"""
-                        <div style="background:#1e293b;padding:1rem;border-radius:10px;">
-                            <strong style="color:white;">📘 Content:</strong> <span style="color:#e2e8f0;">{child['content']}</span><br><br>
-                            {"<strong style='color:white;'>💡 Summary:</strong> <em style='color:#a5f3fc;'>" + child['summary'] + "</em>" if include_summaries and child.get('summary') else ""}
-                        </div>
-                    """, unsafe_allow_html=True)
-        elif "question" in first and "answer" in first:
-            for card in cards:
-                st.markdown(f"<div class='section-header'>🧠 Flashcard: {card['question']}</div>", unsafe_allow_html=True)
+        if cards:
+            first = cards[0]
+
+            if "node" in first:
+                st.markdown(f"<div class='section-header'> {first['node']}</div>", unsafe_allow_html=True)
+                if first.get("content"):
+                    st.info(first["content"])
+
+                for idx, child in enumerate(first.get("children", [])):
+                    key = f"show_child_{idx}"
+                    with st.expander(f"🔹 {child['node']}", expanded=st.session_state.get(key, False)):
+                        st.session_state[key] = True  # Mark as opened
+                        st.markdown(f"""
+                            <div style="background:#1e293b;padding:1rem;border-radius:10px;">
+                                <strong style="color:white;">📘 Content:</strong> <span style="color:#e2e8f0;">{child['content']}</span><br><br>
+                                {"<strong style='color:white;'>💡 Summary:</strong> <em style='color:#a5f3fc;'>" + child['summary'] + "</em>" if include_summaries and child.get('summary') else ""}
+                            </div>
+                        """, unsafe_allow_html=True)
+
+            elif "question" in first and "answer" in first:
+                st.markdown(f"<div class='section-header'>🧠 Flashcard: {first['question']}</div>", unsafe_allow_html=True)
                 st.markdown(f"""
                     <div style='background:#1e293b;padding:1.5rem;border-radius:10px;color:white'>
-                        <strong>📘 Answer:</strong> {card['answer']}<br><br>
-                        {"<em>💡 Summary:</em> " + card.get("summary", "") if include_summaries and card.get("summary") else ""}
+                        <strong>📘 Answer:</strong> {first['answer']}<br><br>
+                        {"<em>💡 Summary:</em> " + first.get("summary", "") if include_summaries and first.get("summary") else ""}
                     </div>
                 """, unsafe_allow_html=True)
-        else:
-            st.warning("⚠️ Unrecognized flashcard format.")
-    
-        # ✅ PDF Export
+
+            else:
+                st.warning("⚠️ Unrecognized flashcard format.")
+
+
+        # ✅ PDF Download
         try:
             pdf_path = export_styled_flashcards_pdf(cards, include_summaries)
             with open(pdf_path, "rb") as f:
@@ -1011,8 +977,7 @@ def show_flashcards():
                 )
         except Exception as e:
             st.error(f"❌ PDF Export Failed: {e}")
-    
-            
+        
     # Footer
     st.markdown("---")
     st.markdown(
