@@ -1,3 +1,20 @@
+
+import os
+import json
+import streamlit as st
+from langchain.schema import HumanMessage
+from langchain_together import ChatTogether
+import random
+
+# Fix: Dummy key to satisfy OpenAI dependency
+os.environ["OPENAI_API_KEY"] = st.secrets["together"]["TOGETHER_API_KEY"]
+
+llm = ChatTogether(
+    model="mistralai/Mistral-7B-Instruct-v0.1",
+    temperature=0.2,
+    together_api_key=st.secrets["together"]["TOGETHER_API_KEY"]
+)
+
 def generate_quiz(topic, qtype, difficulty, num_questions):
     prompt = f"""
 You are an expert quiz generator for programming and computer science concepts.
