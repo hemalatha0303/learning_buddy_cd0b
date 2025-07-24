@@ -1202,109 +1202,92 @@ def show_saved_content():
         st.markdown("<h2 style='color:#ffffff; text-shadow: 0 0 10px #ffffff; margin-bottom: 2rem;'>🧠 Learning Buddy</h2>", unsafe_allow_html=True)
         
         # Navigation menu
-        pages = ['🏠 Home', '📝 Generate Quiz', '🎯 Flashcards', '💾 Saved Content','👤 profile', '⚙️ Settings']
+        pages = ['🏠 Home', '📝 Generate Quiz', '🎯 Flashcards', '💾 Saved Content', '👤 profile', '⚙️ Settings']
         
         for page in pages:
             if st.button(page, key=page, use_container_width=True):
                 st.session_state.current_page = page.split(' ', 1)[1]
 
-    col1, col2 = st.columns([4, 1])
-   
+    col1, col2 = st.columns([4,1])
+    
     with col1:
-        st.markdown('<div class="welcome-header" style="color:#ffffff; text-shadow: 0 0 10px #C66727;">Saved Quizzes</div>', unsafe_allow_html=True)
-        st.markdown('<div class="welcome-subtext" style="color:#ffffff; text-shadow: 0 0 10px #C66727;">Review your previously attempted quizzes here.</div>', unsafe_allow_html=True)
-
+        st.markdown('<div class="welcome-header" style="color:#ffffff; text-shadow: 0 0 10px #C66727;">Flashcards</div>', unsafe_allow_html=True)
+        st.markdown('<div class="welcome-subtext" style="color:#ffffff; text-shadow: 0 0 10px #C66727;">Review and practice with interactive flashcards.</div>', unsafe_allow_html=True)
+        
     with col2:
         if st.button("logout", type="primary", use_container_width=True):
             st.session_state.page = 'landing'
             st.session_state.signed_in = False
             st.session_state.current_page = 'Home'
+    # Flashcard form
+    with st.form("flashcard_form"):
+        text = st.text_area("Enter your source material:", height=150)
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            difficulty = st.selectbox("Difficulty", ["Easy", "Medium", "Hard"])
+        include_summaries = st.toggle("Include Summaries", value=True)
+        submitted = st.form_submit_button("Generate Content")
 
-    user_id = st.session_state.get("user_id")
-    user_name = st.session_state.get("user_name")
-    user_email = st.session_state.get("user_email")
+        if submitted:
+            with st.spinner("Generating content for you..."):
+                try:
+                    cards = generate_flashcards(text, difficulty, include_summaries)
+                    st.session_state.generated_flashcards = cards
+                    st.session_state.include_summaries = include_summaries
+                    st.success(f"{len(cards)} flashcards generated successfully!")
+                except Exception as e:
+                    st.error(f"❌ Error: {e}")
 
-    # 🔒 Handle unsaved quiz attempt first
-    if 'last_attempt' in st.session_state:
-        st.warning("📌 You have an unsaved quiz attempt.")
-        if st.button("💾 Save Last Attempt to Database"):
-            try:
-                if not all([user_id, user_name, user_email]):
-                    st.error("❌ Missing user details. Please log in again.")
-                    return
+    cards = st.session_state.generated_flashcards
+    include_summaries = st.session_state.include_summaries
 
-                attempt = st.session_state.last_attempt
-                if "attempted_at" not in attempt:
-                    attempt["attempted_at"] = datetime.now()
-                if not attempt.get("topic"):
-                    attempt["topic"] = "Unknown Topic"
+    if cards:
+        if cards:
+            first = cards[0]
 
-                # Save to Firebase
-                save_quiz_attempt(user_id, user_name, user_email, attempt)
-                st.success("✅ Quiz attempt saved to Firebase!")
-                del st.session_state.last_attempt
-                st.session_state.quiz_count += 1
-                st.rerun()
-            except Exception as e:
-                st.error(f"❌ Failed to save quiz to Firebase: {e}")
-        return
+            if "node" in first:
+                st.markdown(f"<div class='section-header'> {first['node']}</div>", unsafe_allow_html=True)
+                if first.get("content"):
+                    st.info(first["content"])
 
-    # ✅ Load saved attempts from Firestore
-    try:
-        query = db.collection("quiz_attempts") \
-                  .where("user_id", "==", user_id) \
-                  .order_by("attempted_at", direction="DESCENDING") \
-                  .stream()
-        attempts = [doc.to_dict() for doc in query]
-    except Exception as e:
-        st.error(f"⚠️ Failed to load attempts: {e}")
-        return
+                for idx, child in enumerate(first.get("children", [])):
+                    key = f"show_child_{idx}"
+                    with st.expander(f"🔹 {child['node']}", expanded=st.session_state.get(key, False)):
+                        st.session_state[key] = True  # Mark as opened
+                        st.markdown(f"""
+                            <div style="background:#1e293b;padding:1rem;border-radius:10px;">
+                                <strong style="color:white;">📘 Content:</strong> <span style="color:#e2e8f0;">{child['content']}</span><br><br>
+                                {"<strong style='color:white;'>💡 Summary:</strong> <em style='color:#a5f3fc;'>" + child['summary'] + "</em>" if include_summaries and child.get('summary') else ""}
+                            </div>
+                        """, unsafe_allow_html=True)
 
-    if not attempts:
-        st.info("❗ No quizzes attempted yet.")
-        return
+            elif "question" in first and "answer" in first:
+                st.markdown(f"<div class='section-header'>🧠 Flashcard: {first['question']}</div>", unsafe_allow_html=True)
+                st.markdown(f"""
+                    <div style='background:#1e293b;padding:1.5rem;border-radius:10px;color:white'>
+                        <strong>📘 Answer:</strong> {first['answer']}<br><br>
+                        {"<em>💡 Summary:</em> " + first.get("summary", "") if include_summaries and first.get("summary") else ""}
+                    </div>
+                """, unsafe_allow_html=True)
 
-    # ✅ Display all attempts
-    st.subheader("📚 Saved Quizzes")
-    st.caption("Review your previously attempted quizzes here.")
+            else:
+                st.warning("⚠️ Unrecognized flashcard format.")
 
-    for i, quiz in enumerate(attempts):
-        # Handle stringified JSON if stored as string
-        questions = quiz["questions"]
-        if isinstance(questions, str):
-            try:
-                questions = json.loads(questions)
-            except Exception:
-                questions = []
 
-        answers = quiz["answers"]
-        if isinstance(answers, str):
-            try:
-                answers = json.loads(answers)
-            except Exception:
-                answers = {}
-
-        time = quiz.get("attempted_at", "Unknown time")
-
-        with st.expander(f"📘 Attempt {i+1}: {quiz.get('topic', 'N/A')} | Score: {quiz.get('score', '0/0')}"):
-            st.markdown(f"**📝 Topic:** {quiz.get('topic', 'Unknown')}")            
-            st.markdown(f"**🎯 Difficulty:** {quiz.get('difficulty', 'Unknown')}")  
-            st.markdown(f"**🏆 Score:** {quiz.get('score', '0/0')} ({quiz.get('percentage', '0%')})")
-            st.markdown(f"**🕒 Attempted At:** {time}")
-            st.markdown("---")
-
-            for idx, q in enumerate(questions):
-                user_ans = answers.get(str(idx), "Not Answered")
-                correct_ans = q.get("correct_answer", "N/A")
-                explanation = q.get("explanation") or "No explanation available"
-                result = "✅ Correct!" if user_ans == correct_ans else "❌ Incorrect"
-
-                st.markdown(f"**Q{idx+1}:** {q['question']}")
-                st.markdown(f"- **Your Answer:** {user_ans}")
-                st.markdown(f"- **Correct Answer:** {correct_ans}")
-                st.markdown(f"- **Result:** {result}")
-                st.markdown(f"- **Explanation:** {explanation}")
-                st.markdown("---")
+        # ✅ PDF Download
+        try:
+            pdf_path = export_styled_flashcards_pdf(cards, include_summaries)
+            with open(pdf_path, "rb") as f:
+                st.download_button(
+                    "📥 Download Flashcards (PDF)",
+                    data=f.read(),
+                    file_name="flashcards.pdf",
+                    mime="application/pdf"
+                )
+        except Exception as e:
+            st.error(f"❌ PDF Export Failed: {e}")
+        
     # Footer
     st.markdown("---")
     st.markdown(
@@ -1312,7 +1295,7 @@ def show_saved_content():
         '🧠 Learning Buddy - Powered by Bright Minds cd0b | © 2025'
         '</div>', 
         unsafe_allow_html=True
-    )
+    ) 
 
 def show_profile():
     # Custom CSS for styling
