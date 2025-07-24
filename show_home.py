@@ -1189,11 +1189,7 @@ def show_saved_content():
     user_name = st.session_state.get("user_name")
     user_email = st.session_state.get("user_email")
 
-    if not user_id:
-        st.warning("⚠️ Please log in to view saved content.")
-        return
-
-    # 🔒 Handle unsaved quiz attempt
+    # 🔒 Handle unsaved quiz attempt first
     if 'last_attempt' in st.session_state:
         st.warning("📌 You have an unsaved quiz attempt.")
         if st.button("💾 Save Last Attempt to Database"):
@@ -1203,12 +1199,8 @@ def show_saved_content():
                     return
 
                 attempt = st.session_state.last_attempt
-
-                # Add timestamp if missing
                 if "attempted_at" not in attempt:
                     attempt["attempted_at"] = datetime.now()
-
-                # Fallback topic
                 if not attempt.get("topic"):
                     attempt["topic"] = "Unknown Topic"
 
@@ -1228,7 +1220,7 @@ def show_saved_content():
                   .where("user_id", "==", user_id) \
                   .order_by("attempted_at", direction="DESCENDING") \
                   .stream()
-        attempts = [doc.to_dict() for doc in list(query)]
+        attempts = [doc.to_dict() for doc in query]
     except Exception as e:
         st.error(f"⚠️ Failed to load attempts: {e}")
         return
@@ -1238,35 +1230,32 @@ def show_saved_content():
         return
 
     # ✅ Display all attempts
-    st.subheader("📘 Saved Quiz Attempts")
-    st.caption("You can review your previous quiz answers and explanations here.")
+    st.subheader("📚 Saved Quizzes")
+    st.caption("Review your previously attempted quizzes here.")
 
     for i, quiz in enumerate(attempts):
-        # Parse questions
-        questions = quiz.get("questions", [])
+        # Handle stringified JSON if stored as string
+        questions = quiz["questions"]
         if isinstance(questions, str):
             try:
                 questions = json.loads(questions)
-            except:
+            except Exception:
                 questions = []
 
-        # Parse answers (can be dict or list)
-        answers = quiz.get("answers", {})
+        answers = quiz["answers"]
         if isinstance(answers, str):
             try:
                 answers = json.loads(answers)
-            except:
+            except Exception:
                 answers = {}
-        elif isinstance(answers, list):
-            answers = {str(idx): ans for idx, ans in enumerate(answers)}
 
-        attempted_at = quiz.get("attempted_at", "Unknown")
+        time = quiz.get("attempted_at", "Unknown time")
 
         with st.expander(f"📘 Attempt {i+1}: {quiz.get('topic', 'N/A')} | Score: {quiz.get('score', '0/0')}"):
-            st.markdown(f"**📝 Topic:** {quiz.get('topic', 'Unknown')}")
-            st.markdown(f"**🎯 Difficulty:** {quiz.get('difficulty', 'Unknown')}")
+            st.markdown(f"**📝 Topic:** {quiz.get('topic', 'Unknown')}")            
+            st.markdown(f"**🎯 Difficulty:** {quiz.get('difficulty', 'Unknown')}")  
             st.markdown(f"**🏆 Score:** {quiz.get('score', '0/0')} ({quiz.get('percentage', '0%')})")
-            st.markdown(f"**🕒 Attempted At:** {attempted_at}")
+            st.markdown(f"**🕒 Attempted At:** {time}")
             st.markdown("---")
 
             for idx, q in enumerate(questions):
@@ -1275,13 +1264,12 @@ def show_saved_content():
                 explanation = q.get("explanation") or "No explanation available"
                 result = "✅ Correct!" if user_ans == correct_ans else "❌ Incorrect"
 
-                st.markdown(f"**Q{idx+1}:** {q.get('question', 'Missing Question')}")
+                st.markdown(f"**Q{idx+1}:** {q['question']}")
                 st.markdown(f"- **Your Answer:** {user_ans}")
                 st.markdown(f"- **Correct Answer:** {correct_ans}")
                 st.markdown(f"- **Result:** {result}")
                 st.markdown(f"- **Explanation:** {explanation}")
                 st.markdown("---")
-
 
     # Footer
     st.markdown("---")
