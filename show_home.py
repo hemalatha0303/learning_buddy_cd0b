@@ -520,7 +520,7 @@ def show_generate_quiz():
     if submit:
         with st.spinner("Generating quiz..."):
             try:
-                quiz_data = generate_quiz(topic, "Multiple Choice", difficulty, num_questions)
+                quiz_data = generate_quiz(topic, qtype, difficulty, num_questions)
                 st.session_state.quiz_data = quiz_data
                 st.session_state.user_answers = {}
                 st.session_state.show_answers = False
