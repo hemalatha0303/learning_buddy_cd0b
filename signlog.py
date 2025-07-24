@@ -225,23 +225,28 @@ def show_auth_page():
                     if name and email and password and confirm:
                         if password == confirm:
                             try:
-                                otp = generate_otp()
-                                if send_otp_email(email, otp):
-                                    db.collection("users").add({
-                                        "full_name": name,
-                                        "email": email,
-                                        "password": password,
-                                        "created_at": datetime.now(),
-                                        "otp_code": otp,
-                                        "is_verified": False,
-                                        "study_streak": 0,
-                                        "last_login_date": None
-                                    })
-                                    st.success("🎉 Account created! OTP sent to your email.")
-                                    st.session_state.verification_email = email
-                                    st.session_state.show_verification = True
+                                existing_user = next(db.collection("users").where("email", "==", email).stream(), None)
+
+                                if existing_user:
+                                    st.error("🚫 An account with this email already exists. Please sign in or use a different email.")
                                 else:
-                                    st.error("❌ Failed to send OTP. Please try again.")
+                                    otp = generate_otp()
+                                    if send_otp_email(email, otp):
+                                        db.collection("users").add({
+                                            "full_name": name,
+                                            "email": email,
+                                            "password": password,
+                                            "created_at": datetime.now(),
+                                            "otp_code": otp,
+                                            "is_verified": False,
+                                            "study_streak": 0,
+                                            "last_login_date": None
+                                        })
+                                        st.success("🎉 Account created! OTP sent to your email.")
+                                        st.session_state.verification_email = email
+                                        st.session_state.show_verification = True
+                                    else:
+                                        st.error("❌ Failed to send OTP. Please try again.")
 
                             except Exception as e:
                                 st.error(f"🔥 Firebase error: {e}")
