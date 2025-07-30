@@ -121,7 +121,7 @@ def show_home():
     # Sidebar Navigation
     with st.sidebar:
         st.markdown("<h2 style='color:#ffffff; text-shadow: 0 0 10px #ffffff; margin-bottom: 2rem; '>🧠 Learning Buddy</h2>", unsafe_allow_html=True)
-        pages = ['🏠 Home', '📝 Generate Quiz', '🎯 Flashcards', '💾 Saved Content', '👤 profile', '⚙️ Settings']
+        pages = ['🏠 Home', '📝 Generate Quiz', '🎯 PromptSnaps', '💾 Saved Content', '👤 profile', '⚙️ Settings']
         for i, page in enumerate(pages):
             if st.button(page, key=f"sidebar_nav_{i}", use_container_width=True):
                 page_name = page.split(' ', 1)[1].lower().replace(" ", "_")
@@ -193,8 +193,8 @@ def show_home():
     with col2:
         st.markdown("""
         <div class="feature-card zoom-in">
-            <h3>🗂️ Flashcards</h3>
-            <p>Create interactive study flashcards that make memorization effective and fun.</p>
+            <h3>🗂️ PromptSnaps</h3>
+            <p>Create interactive study PromptSnaps that make memorization effective and fun.</p>
             <strong>🧠 Memory Boost</strong>
         </div>
         """, unsafe_allow_html=True)
@@ -223,7 +223,7 @@ def show_home():
         <div class="feature-box feature-card zoom-in" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-size:20px; color: white;">
             <h3>✨ Key Features</h3>
             <ul style="text-align: left; font-size: 1rem; line-height: 2;">
-                <li>🎯 AI-generated quizzes and flashcards</li>
+                <li>🎯 AI-generated quizzes and PromptSnaps</li>
                 <li>📈 Analytics and progress tracking</li>
                 <li>🔥 Learning streaks & achievements</li>
                 <li>👥 Connect with learners</li>
@@ -239,7 +239,7 @@ def show_home():
             <ul style="text-align: left; font-size: 1rem; line-height: 2;">
                 <li>🆓 <strong>10 FREE credits</strong> at sign up</li>
                 <li>📝 <strong>2 credits</strong> per quiz</li>
-                <li>🗂️ <strong>1 credit</strong> per flashcard</li>
+                <li>🗂️ <strong>1 credit</strong> per PromptSnap</li>
                 <li>💾 Save your content</li>
                 <li>💳 Buy more anytime: <strong>20 credits = 200/-</li>
             </ul>
@@ -480,7 +480,7 @@ def show_generate_quiz():
         st.markdown("<h2 style='color:#ffffff; text-shadow: 0 0 10px #ffffff; margin-bottom: 2rem;'>🧠 Learning Buddy</h2>", unsafe_allow_html=True)
         
         # Navigation menu
-        pages = ['🏠 Home', '📝 Generate Quiz', '🎯 Flashcards', '💾 Saved Content','👤 profile', '⚙️ Settings']
+        pages = ['🏠 Home', '📝 Generate Quiz', '🎯 PromptSnaps', '💾 Saved Content','👤 profile', '⚙️ Settings']
         
         for page in pages:
             if st.button(page, key=page, use_container_width=True):
@@ -676,7 +676,7 @@ def export_styled_flashcards_pdf(cards, include_summary=True):
             pdf.ln(2)
 
     else:
-        raise ValueError("Unrecognized flashcard format for PDF export.")
+        raise ValueError("Unrecognized PromptSnap format for PDF export.")
 
     filename = f"flashcards_{uuid.uuid4().hex[:8]}.pdf"
     pdf.output(filename)
@@ -893,7 +893,7 @@ def show_flashcards():
         st.markdown("<h2 style='color:#ffffff; text-shadow: 0 0 10px #ffffff; margin-bottom: 2rem;'>🧠 Learning Buddy</h2>", unsafe_allow_html=True)
         
         # Navigation menu
-        pages = ['🏠 Home', '📝 Generate Quiz', '🎯 Flashcards', '💾 Saved Content', '👤 profile', '⚙️ Settings']
+        pages = ['🏠 Home', '📝 Generate Quiz', '🎯 PromptSnaps', '💾 Saved Content', '👤 profile', '⚙️ Settings']
         
         for page in pages:
             if st.button(page, key=page, use_container_width=True):
@@ -901,8 +901,8 @@ def show_flashcards():
 
     col1, col2 = st.columns([4,1])
     with col1:
-        st.markdown('<div class="welcome-header" style="color:#ffffff; text-shadow: 0 0 10px #C66727;">Flashcards</div>', unsafe_allow_html=True)
-        st.markdown('<div class="welcome-subtext" style="color:#ffffff; text-shadow: 0 0 10px #C66727;">Review and practice with interactive flashcards.</div>', unsafe_allow_html=True)
+        st.markdown('<div class="welcome-header" style="color:#ffffff; text-shadow: 0 0 10px #C66727;">PromptSnaps</div>', unsafe_allow_html=True)
+        st.markdown('<div class="welcome-subtext" style="color:#ffffff; text-shadow: 0 0 10px #C66727;">Review and practice with interactive PromptSnaps.</div>', unsafe_allow_html=True)
         
     with col2:
         if st.button("logout", type="primary", use_container_width=True):
@@ -953,7 +953,7 @@ def show_flashcards():
                         """, unsafe_allow_html=True)
 
             elif "question" in first and "answer" in first:
-                st.markdown(f"<div class='section-header'>🧠 Flashcard: {first['question']}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div class='section-header'>🧠 PromptSnap: {first['question']}</div>", unsafe_allow_html=True)
                 st.markdown(f"""
                     <div style='background:#1e293b;padding:1.5rem;border-radius:10px;color:white'>
                         <strong>📘 Answer:</strong> {first['answer']}<br><br>
@@ -962,7 +962,7 @@ def show_flashcards():
                 """, unsafe_allow_html=True)
 
             else:
-                st.warning("⚠️ Unrecognized flashcard format.")
+                st.warning("⚠️ Unrecognized PromptSnap format.")
 
 
         # ✅ PDF Download
@@ -970,7 +970,7 @@ def show_flashcards():
             pdf_path = export_styled_flashcards_pdf(cards, include_summaries)
             with open(pdf_path, "rb") as f:
                 st.download_button(
-                    "📥 Download Flashcards (PDF)",
+                    "📥 Download PromptSnaps (PDF)",
                     data=f.read(),
                     file_name="flashcards.pdf",
                     mime="application/pdf"
@@ -1167,7 +1167,7 @@ def show_saved_content():
         st.markdown("<h2 style='color:#ffffff; text-shadow: 0 0 10px #ffffff; margin-bottom: 2rem;'>🧠 Learning Buddy</h2>", unsafe_allow_html=True)
         
         # Navigation menu
-        pages = ['🏠 Home', '📝 Generate Quiz', '🎯 Flashcards', '💾 Saved Content', '👤 profile', '⚙️ Settings']
+        pages = ['🏠 Home', '📝 Generate Quiz', '🎯 PromptSnaps', '💾 Saved Content', '👤 profile', '⚙️ Settings']
         
         for page in pages:
             if st.button(page, key=page, use_container_width=True):
@@ -1457,7 +1457,7 @@ def show_profile():
         st.markdown("<h2 style='color:#ffffff; text-shadow: 0 0 10px #ffffff; margin-bottom: 2rem;'>🧠 Learning Buddy</h2>", unsafe_allow_html=True)
         
         # Navigation menu
-        pages = ['🏠 Home', '📝 Generate Quiz', '🎯 Flashcards', '💾 Saved Content', '👤 profile', '⚙️ Settings']
+        pages = ['🏠 Home', '📝 Generate Quiz', '🎯 PromptSnaps', '💾 Saved Content', '👤 profile', '⚙️ Settings']
         
         for page in pages:
             if st.button(page, key=page, use_container_width=True):
@@ -1770,7 +1770,7 @@ def show_settings():
         st.markdown("<h2 style='color:#ffffff; text-shadow: 0 0 10px #ffffff; margin-bottom: 2rem;'>🧠 Learning Buddy</h2>", unsafe_allow_html=True)
         
         # Navigation menu
-        pages = ['🏠 Home', '📝 Generate Quiz', '🎯 Flashcards', '💾 Saved Content', '👤 profile', '⚙️ Settings']
+        pages = ['🏠 Home', '📝 Generate Quiz', '🎯 PromptSnaps', '💾 Saved Content', '👤 profile', '⚙️ Settings']
         
         for page in pages:
             if st.button(page, key=page, use_container_width=True):
