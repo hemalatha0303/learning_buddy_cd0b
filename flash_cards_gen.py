@@ -65,7 +65,7 @@ def generate_flashcards(text, difficulty, include_summary):
     match = re.search(r"\[.*\]", content, re.DOTALL)
     if not match:
         print("LLM raw content:", content)
-        raise ValueError("⚠️ Failed to parse flashcards from LLM response.")
+        raise ValueError("⚠️ Failed to parse PromptSnaps from LLM response.")
     try:
         cards = json5.loads(match.group(0))
     except Exception as e:
@@ -73,7 +73,7 @@ def generate_flashcards(text, difficulty, include_summary):
         raise ValueError(f"⚠️ JSON decoding failed: {e}")
 
     if not isinstance(cards, list) or not cards:
-        raise ValueError("⚠️ Flashcard response must be a non-empty list.")
+        raise ValueError("⚠️ PromptSnap response must be a non-empty list.")
 
     first = cards[0]
 
@@ -107,6 +107,6 @@ def generate_flashcards(text, difficulty, include_summary):
         validated_cards.append(node)
 
     else:
-        raise ValueError("Unrecognized flashcard format.")
+        raise ValueError("Unrecognized PromptSnap format.")
 
     return validated_cards
