@@ -58,8 +58,8 @@ def show_landing_page():
     with col2:
         st.markdown("""
         <div class="feature-card zoom-in">
-            <h3>🗂️ Flashcards</h3>
-            <p>Create interactive study flashcards that make memorization effective and fun.</p>
+            <h3>🗂️ PromptSnaps</h3>
+            <p>Create interactive study PromptSnaps that make memorization effective and fun.</p>
             <strong>🧠 Memory Boost</strong>
         </div>
         """, unsafe_allow_html=True)
@@ -88,7 +88,7 @@ def show_landing_page():
         <div class="feature-box feature-card zoom-in" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-size:20px; color: white;">
             <h3>✨ Key Features</h3>
             <ul style="text-align: left; font-size: 1rem; line-height: 2;">
-                <li>🎯 AI-generated quizzes and flashcards</li>
+                <li>🎯 AI-generated quizzes and PromptSnaps</li>
                 <li>📈 Analytics and progress tracking</li>
                 <li>🔥 Learning streaks & achievements</li>
                 <li>👥 Connect with learners</li>
@@ -104,7 +104,7 @@ def show_landing_page():
             <ul style="text-align: left; font-size: 1rem; line-height: 2;">
                 <li>🆓 <strong>10 FREE credits</strong> at sign up</li>
                 <li>📝 <strong>2 credits</strong> per quiz</li>
-                <li>🗂️ <strong>1 credit</strong> per flashcard</li>
+                <li>🗂️ <strong>1 credit</strong> per PromptSnap</li>
                 <li>💾 Save your content</li>
                 <li>💳 Buy more anytime: <strong>20 credits = 200/-</li>
             </ul>
