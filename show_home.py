@@ -845,9 +845,6 @@ def show_flashcards():
         color: white !important;
     }
 
-                
-
-        
         /* Hide Streamlit default elements */
         #MainMenu {visibility: hidden;}
         footer {visibility: hidden;}
@@ -899,16 +896,19 @@ def show_flashcards():
             if st.button(page, key=page, use_container_width=True):
                 st.session_state.current_page = page.split(' ', 1)[1]
 
-    col1, col2 = st.columns([4,1])
+    col1, col2 = st.columns([4, 1])
     with col1:
         st.markdown('<div class="welcome-header" style="color:#ffffff; text-shadow: 0 0 10px #C66727;">PromptSnaps</div>', unsafe_allow_html=True)
         st.markdown('<div class="welcome-subtext" style="color:#ffffff; text-shadow: 0 0 10px #C66727;">Review and practice with interactive PromptSnaps.</div>', unsafe_allow_html=True)
-        
-    with col2:
-        if st.button("logout", type="primary", use_container_width=True):
-            st.session_state.page = 'landing'
-            st.session_state.signed_in = False
-            st.session_state.current_page = 'Home'
+    
+    # Do not place a logout button here; it's handled by main.py
+
+    # Initialize session state (if not already done by main.py)
+    if 'generated_flashcards' not in st.session_state:
+        st.session_state.generated_flashcards = []
+    if 'include_summaries' not in st.session_state:
+        st.session_state.include_summaries = True
+
     # Flashcard form
     with st.form("flashcard_form"):
         text = st.text_area("Enter your source material:", height=150)
@@ -916,57 +916,57 @@ def show_flashcards():
         
         with col1:
             difficulty = st.selectbox("Difficulty", ["Easy", "Medium", "Hard"])
+        
         include_summaries = st.toggle("Include Summaries", value=True)
         submitted = st.form_submit_button("Generate Content")
 
         if submitted:
             with st.spinner("Generating content for you..."):
                 try:
+                    # Make sure generate_flashcards is imported or defined
                     cards = generate_flashcards(text, difficulty, include_summaries)
                     st.session_state.generated_flashcards = cards
                     st.session_state.include_summaries = include_summaries
                     st.success(f"{len(cards)} flashcards generated successfully!")
                 except Exception as e:
                     st.error(f"❌ Error: {e}")
-
-    cards = st.session_state.generated_flashcards
-    include_summaries = st.session_state.include_summaries
+    
+    # Display generated cards (this section is fine)
+    cards = st.session_state.get('generated_flashcards', [])
+    include_summaries = st.session_state.get('include_summaries', True)
 
     if cards:
-        if cards:
-            first = cards[0]
+        first = cards[0]
+        # ... (rest of the card display logic) ...
+        if "node" in first:
+            st.markdown(f"<div class='section-header'> {first['node']}</div>", unsafe_allow_html=True)
+            if first.get("content"):
+                st.info(first["content"])
 
-            if "node" in first:
-                st.markdown(f"<div class='section-header'> {first['node']}</div>", unsafe_allow_html=True)
-                if first.get("content"):
-                    st.info(first["content"])
+            for idx, child in enumerate(first.get("children", [])):
+                key = f"show_child_{idx}"
+                with st.expander(f"🔹 {child['node']}", expanded=st.session_state.get(key, False)):
+                    st.session_state[key] = True
+                    st.markdown(f"""
+                        <div style="background:#1e293b;padding:1rem;border-radius:10px;">
+                            <strong style="color:white;">📘 Content:</strong> <span style="color:#e2e8f0;">{child['content']}</span><br><br>
+                            {"<strong style='color:white;'>💡 Summary:</strong> <em style='color:#a5f3fc;'>" + child['summary'] + "</em>" if include_summaries and child.get('summary') else ""}
+                        </div>
+                    """, unsafe_allow_html=True)
 
-                for idx, child in enumerate(first.get("children", [])):
-                    key = f"show_child_{idx}"
-                    with st.expander(f"🔹 {child['node']}", expanded=st.session_state.get(key, False)):
-                        st.session_state[key] = True  # Mark as opened
-                        st.markdown(f"""
-                            <div style="background:#1e293b;padding:1rem;border-radius:10px;">
-                                <strong style="color:white;">📘 Content:</strong> <span style="color:#e2e8f0;">{child['content']}</span><br><br>
-                                {"<strong style='color:white;'>💡 Summary:</strong> <em style='color:#a5f3fc;'>" + child['summary'] + "</em>" if include_summaries and child.get('summary') else ""}
-                            </div>
-                        """, unsafe_allow_html=True)
-
-            elif "question" in first and "answer" in first:
-                st.markdown(f"<div class='section-header'>🧠 PromptSnap: {first['question']}</div>", unsafe_allow_html=True)
-                st.markdown(f"""
-                    <div style='background:#1e293b;padding:1.5rem;border-radius:10px;color:white'>
-                        <strong>📘 Answer:</strong> {first['answer']}<br><br>
-                        {"<em>💡 Summary:</em> " + first.get("summary", "") if include_summaries and first.get("summary") else ""}
-                    </div>
-                """, unsafe_allow_html=True)
-
-            else:
-                st.warning("⚠️ Unrecognized PromptSnap format.")
-
-
-        # ✅ PDF Download
+        elif "question" in first and "answer" in first:
+            st.markdown(f"<div class='section-header'>🧠 PromptSnap: {first['question']}</div>", unsafe_allow_html=True)
+            st.markdown(f"""
+                <div style='background:#1e293b;padding:1.5rem;border-radius:10px;color:white'>
+                    <strong>📘 Answer:</strong> {first['answer']}<br><br>
+                    {"<em>💡 Summary:</em> " + first.get("summary", "") if include_summaries and first.get("summary") else ""}
+                </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.warning("⚠️ Unrecognized PromptSnap format.")
+        
         try:
+            # Make sure export_styled_flashcards_pdf is defined or imported
             pdf_path = export_styled_flashcards_pdf(cards, include_summaries)
             with open(pdf_path, "rb") as f:
                 st.download_button(
@@ -977,15 +977,15 @@ def show_flashcards():
                 )
         except Exception as e:
             st.error(f"❌ PDF Export Failed: {e}")
-        
+
     # Footer
     st.markdown("---")
     st.markdown(
         '<div style="text-align: center; color: #64748b; font-size: 0.9rem; padding: 1rem;">'
         '🧠 Learning Buddy - Powered by Bright Minds cd0b | © 2025'
-        '</div>', 
+        '</div>',
         unsafe_allow_html=True
-    ) 
+    )
 
 def show_saved_content():
        
@@ -1828,4 +1828,5 @@ def show_settings():
         '</div>', 
         unsafe_allow_html=True
     )
+
 
