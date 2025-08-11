@@ -47,7 +47,7 @@ elif st.session_state.page == 'home':
                 show_home()
             case "generate_quiz":
                 show_generate_quiz()
-            case "PromptSanps":
+            case "PromptSnaps":
                 show_flashcards()
             case "saved_content":
                 show_saved_content()
@@ -75,4 +75,5 @@ elif action == "logout":
     st.session_state.current_page = "Home"
     st.query_params.clear()
     st.rerun()
+
 
