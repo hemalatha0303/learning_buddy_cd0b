@@ -624,7 +624,7 @@ def export_styled_flashcards_pdf(cards, include_summary=True):
     if "node" in first:
         # ✅ MIND MAP FORMAT
         root = remove_emojis(first["node"])
-        pdf.cell(0, 10, f"Mind Map: {root}", ln=True, align='C')
+        pdf.cell(0, 10, f"Concept: {root}", ln=True, align='C')
         pdf.ln(10)
 
         if "children" in first:
@@ -899,7 +899,7 @@ def show_flashcards():
     col1, col2 = st.columns([4, 1])
     with col1:
         st.markdown('<div class="welcome-header" style="color:#ffffff; text-shadow: 0 0 10px #C66727;">PromptSnaps</div>', unsafe_allow_html=True)
-        st.markdown('<div class="welcome-subtext" style="color:#ffffff; text-shadow: 0 0 10px #C66727;">Review and practice with interactive PromptSnaps.</div>', unsafe_allow_html=True)
+        st.markdown('<div class="welcome-subtext" style="color:#ffffff; text-shadow: 0 0 10px #C66727;">Instantly Create Your Study Guide.</div>', unsafe_allow_html=True)
     
     # Do not place a logout button here; it's handled by main.py
 
@@ -1828,5 +1828,6 @@ def show_settings():
         '</div>', 
         unsafe_allow_html=True
     )
+
 
 
