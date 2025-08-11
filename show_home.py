@@ -901,7 +901,17 @@ def show_flashcards():
         st.markdown('<div class="welcome-header" style="color:#ffffff; text-shadow: 0 0 10px #C66727;">PromptSnaps</div>', unsafe_allow_html=True)
         st.markdown('<div class="welcome-subtext" style="color:#ffffff; text-shadow: 0 0 10px #C66727;">Instantly Create Your Study Guide.</div>', unsafe_allow_html=True)
     
-    # Do not place a logout button here; it's handled by main.py
+    col1, col2 = st.columns([4,1])
+    
+    with col2:
+        if st.button("logout", type="primary", use_container_width=True):
+            st.session_state.page = 'landing'
+            st.session_state.signed_in = False
+            st.session_state.current_page = 'Home'
+
+    query_page = st.query_params.get("current_page")
+    if query_page:
+        st.session_state.current_page = query_page
 
     # Initialize session state (if not already done by main.py)
     if 'generated_flashcards' not in st.session_state:
@@ -1828,6 +1838,7 @@ def show_settings():
         '</div>', 
         unsafe_allow_html=True
     )
+
 
 
 
