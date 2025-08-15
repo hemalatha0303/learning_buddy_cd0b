@@ -897,8 +897,8 @@ def show_flashcards():
     col1, col2 = st.columns([4, 1])
    
     with col1:
-        st.markdown('<div class="welcome-header" style="color:#ffffff; text-shadow: 0 0 10px #C66727;">Saved Quizzes</div>', unsafe_allow_html=True)
-        st.markdown('<div class="welcome-subtext" style="color:#ffffff; text-shadow: 0 0 10px #C66727;">Review your previously attempted quizzes here.</div>', unsafe_allow_html=True)
+        st.markdown('<div class="welcome-header" style="color:#ffffff; text-shadow: 0 0 10px #C66727;">Prompt Snaps</div>', unsafe_allow_html=True)
+        st.markdown('<div class="welcome-subtext" style="color:#ffffff; text-shadow: 0 0 10px #C66727;">Learning made quicker, cleaner, and smarter.</div>', unsafe_allow_html=True)
 
     with col2:
         if st.button("logout", type="primary", use_container_width=True):
@@ -1826,6 +1826,7 @@ def show_settings():
         '</div>', 
         unsafe_allow_html=True
     )
+
 
 
 
