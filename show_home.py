@@ -876,26 +876,24 @@ def show_flashcards():
     </style>
     """, unsafe_allow_html=True)
 
-  
-   if 'current_page' not in st.session_state:
+    if 'current_page' not in st.session_state:
         st.session_state.current_page = 'Home'
     if 'generated_flashcards' not in st.session_state:
         st.session_state.generated_flashcards = []
     if 'include_summaries' not in st.session_state:
         st.session_state.include_summaries = True
 
-    # Sidebar navigation
+    # ✅ Sidebar navigation
     with st.sidebar:
         st.markdown(
             "<h2 style='color:#ffffff; text-shadow: 0 0 10px #ffffff; margin-bottom: 2rem;'>🧠 Learning Buddy</h2>",
             unsafe_allow_html=True
         )
-
         pages = ['🏠 Home', '📝 Generate Quiz', '🎯 Prompt Snaps', '💾 Saved Content', '👤 Profile', '⚙️ Settings']
         for page in pages:
             if st.button(page, key=page, use_container_width=True):
                 st.session_state.current_page = page.split(' ', 1)[1]
-                st.rerun()  # important to refresh to the new page
+                st.rerun()
 
     # Header
     col1, col2 = st.columns([4, 1])
@@ -1835,6 +1833,7 @@ def show_settings():
         '</div>', 
         unsafe_allow_html=True
     )
+
 
 
 
