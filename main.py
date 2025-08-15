@@ -43,20 +43,20 @@ elif st.session_state.page == 'forgot_password':
 elif st.session_state.page == 'home':
     if st.session_state.signed_in:
         match st.session_state.current_page.lower().replace(" ", "_"):
-        case "home":
-            show_home()
-        case "generate_quiz":
-            show_generate_quiz()
-        case "promptsnaps":
-            show_flashcards()
-        case "saved_content":
-            show_saved_content()
-        case "settings":
-            show_settings()
-        case "profile":
-            show_profile()
-        case "friends":
-            show_friends_page()
+            case "home":
+                show_home()
+            case "generate_quiz":
+                show_generate_quiz()
+            case "promptsnaps":
+                show_flashcards()
+            case "saved_content":
+                show_saved_content()
+            case "settings":
+                show_settings()
+            case "profile":
+                show_profile()
+            case "friends":
+                show_friends_page()
     else:
         st.session_state.page = 'signlog'
         show_auth_page()
@@ -75,6 +75,7 @@ elif action == "logout":
     st.session_state.current_page = "Home"
     st.query_params.clear()
     st.rerun()
+
 
 
 
