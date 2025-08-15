@@ -890,7 +890,7 @@ def show_flashcards():
         st.markdown("<h2 style='color:#ffffff; text-shadow: 0 0 10px #ffffff; margin-bottom: 2rem;'>🧠 Learning Buddy</h2>", unsafe_allow_html=True)
         
         # Navigation menu
-        pages = ['🏠 Home', '📝 Generate Quiz', '🎯 Prompt Snaps', '💾 Saved Content', '👤 profile', '⚙️ Settings']
+        pages = ['🏠 Home', '📝 Generate Quiz', ("🎯 PromptSnaps", "promptsnaps"), '💾 Saved Content', '👤 profile', '⚙️ Settings']
         
         for page in pages:
             if st.button(page, key=page, use_container_width=True):
@@ -1838,6 +1838,7 @@ def show_settings():
         '</div>', 
         unsafe_allow_html=True
     )
+
 
 
 
