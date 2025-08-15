@@ -121,7 +121,7 @@ def show_home():
     # Sidebar Navigation
     with st.sidebar:
         st.markdown("<h2 style='color:#ffffff; text-shadow: 0 0 10px #ffffff; margin-bottom: 2rem; '>🧠 Learning Buddy</h2>", unsafe_allow_html=True)
-        pages = ['🏠 Home', '📝 Generate Quiz', '🎯 PromptSnaps', '💾 Saved Content', '👤 profile', '⚙️ Settings']
+        pages = ['🏠 Home', '📝 Generate Quiz', '🎯 Prompt Snaps', '💾 Saved Content', '👤 profile', '⚙️ Settings']
         for i, page in enumerate(pages):
             if st.button(page, key=f"sidebar_nav_{i}", use_container_width=True):
                 page_name = page.split(' ', 1)[1].lower().replace(" ", "_")
@@ -1177,7 +1177,7 @@ def show_saved_content():
         st.markdown("<h2 style='color:#ffffff; text-shadow: 0 0 10px #ffffff; margin-bottom: 2rem;'>🧠 Learning Buddy</h2>", unsafe_allow_html=True)
         
         # Navigation menu
-        pages = ['🏠 Home', '📝 Generate Quiz', '🎯 PromptSnaps', '💾 Saved Content', '👤 profile', '⚙️ Settings']
+        pages = ['🏠 Home', '📝 Generate Quiz', '🎯 Prompt Snaps', '💾 Saved Content', '👤 profile', '⚙️ Settings']
         
         for page in pages:
             if st.button(page, key=page, use_container_width=True):
@@ -1467,7 +1467,7 @@ def show_profile():
         st.markdown("<h2 style='color:#ffffff; text-shadow: 0 0 10px #ffffff; margin-bottom: 2rem;'>🧠 Learning Buddy</h2>", unsafe_allow_html=True)
         
         # Navigation menu
-        pages = ['🏠 Home', '📝 Generate Quiz', '🎯 PromptSnaps', '💾 Saved Content', '👤 profile', '⚙️ Settings']
+        pages = ['🏠 Home', '📝 Generate Quiz', '🎯 Prompt Snaps', '💾 Saved Content', '👤 profile', '⚙️ Settings']
         
         for page in pages:
             if st.button(page, key=page, use_container_width=True):
@@ -1780,7 +1780,7 @@ def show_settings():
         st.markdown("<h2 style='color:#ffffff; text-shadow: 0 0 10px #ffffff; margin-bottom: 2rem;'>🧠 Learning Buddy</h2>", unsafe_allow_html=True)
         
         # Navigation menu
-        pages = ['🏠 Home', '📝 Generate Quiz', '🎯 PromptSnaps', '💾 Saved Content', '👤 profile', '⚙️ Settings']
+        pages = ['🏠 Home', '📝 Generate Quiz', '🎯 Prompt Snaps', '💾 Saved Content', '👤 profile', '⚙️ Settings']
         
         for page in pages:
             if st.button(page, key=page, use_container_width=True):
@@ -1838,6 +1838,7 @@ def show_settings():
         '</div>', 
         unsafe_allow_html=True
     )
+
 
 
 
