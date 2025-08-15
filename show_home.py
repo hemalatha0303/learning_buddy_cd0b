@@ -890,7 +890,9 @@ def show_flashcards():
         
         for page in pages:
             if st.button(page, key=page, use_container_width=True):
+                st.session_state.page = 'home'
                 st.session_state.current_page = page.split(' ', 1)[1]
+                st.rerun()
 
     col1, col2 = st.columns([4, 1])
    
@@ -1824,6 +1826,7 @@ def show_settings():
         '</div>', 
         unsafe_allow_html=True
     )
+
 
 
 
