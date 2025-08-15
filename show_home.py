@@ -876,43 +876,34 @@ def show_flashcards():
     </style>
     """, unsafe_allow_html=True)
 
+
+    # Initialize session state
     if 'current_page' not in st.session_state:
         st.session_state.current_page = 'Home'
-    if 'generated_flashcards' not in st.session_state:
-        st.session_state.generated_flashcards = []
-    if 'include_summaries' not in st.session_state:
-        st.session_state.include_summaries = True
 
-    # ✅ Sidebar navigation
+    # Sidebar navigation
     with st.sidebar:
-        st.markdown(
-            "<h2 style='color:#ffffff; text-shadow: 0 0 10px #ffffff; margin-bottom: 2rem;'>🧠 Learning Buddy</h2>",
-            unsafe_allow_html=True
-        )
-        pages = ['🏠 Home', '📝 Generate Quiz', '🎯 Prompt Snaps', '💾 Saved Content', '👤 Profile', '⚙️ Settings']
+        st.markdown("<h2 style='color:#ffffff; text-shadow: 0 0 10px #ffffff; margin-bottom: 2rem;'>🧠 Learning Buddy</h2>", unsafe_allow_html=True)
+        
+        # Navigation menu
+        pages = ['🏠 Home', '📝 Generate Quiz', '🎯 Prompt Snaps', '💾 Saved Content', '👤 profile', '⚙️ Settings']
+        
         for page in pages:
             if st.button(page, key=page, use_container_width=True):
                 st.session_state.current_page = page.split(' ', 1)[1]
-                st.rerun()
 
-    # Header
     col1, col2 = st.columns([4, 1])
+   
     with col1:
-        st.markdown(
-            '<div class="welcome-header" style="color:#ffffff; text-shadow: 0 0 10px #C66727;">PromptSnaps</div>',
-            unsafe_allow_html=True
-        )
-        st.markdown(
-            '<div class="welcome-subtext" style="color:#ffffff; text-shadow: 0 0 10px #C66727;">Instantly Create Your Study Guide.</div>',
-            unsafe_allow_html=True
-        )
+        st.markdown('<div class="welcome-header" style="color:#ffffff; text-shadow: 0 0 10px #C66727;">Saved Quizzes</div>', unsafe_allow_html=True)
+        st.markdown('<div class="welcome-subtext" style="color:#ffffff; text-shadow: 0 0 10px #C66727;">Review your previously attempted quizzes here.</div>', unsafe_allow_html=True)
 
     with col2:
-        if st.button("Logout", type="primary", use_container_width=True):
+        if st.button("logout", type="primary", use_container_width=True):
             st.session_state.page = 'landing'
             st.session_state.signed_in = False
             st.session_state.current_page = 'Home'
-            st.rerun()
+
 
     # Flashcard form
     with st.form("flashcard_form"):
@@ -1833,6 +1824,7 @@ def show_settings():
         '</div>', 
         unsafe_allow_html=True
     )
+
 
 
 
