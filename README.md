@@ -1,7 +1,8 @@
 # Learning Buddy – AI Powered Learning Platform
 
 **Personalized Learning. Instant Quizzes. Smarter Progress.**  
-Website: [https://your-website-link.com]([https://your-website-link.com](https://learningbuddycd0b-fjammryuykyruav8er3rhv.streamlit.app/))
+Website: https://learningbuddycd0b-fjammryuykyruav8er3rhv.streamlit.app/
+
 
 
 ---
@@ -89,11 +90,3 @@ Website: [https://your-website-link.com]([https://your-website-link.com](https:/
 ## 📈 Conclusion
 Learning Buddy is an AI-powered platform that delivers personalized flashcards and quizzes, keeping learners engaged through streak tracking and friend comparisons. Built on a secure, scalable system, it ensures smooth performance and reliable progress tracking.  
 **Future Enhancements:** Leaderboards, multi-language support, adaptive AI recommendations, collaborative study groups.
-
----
-
-## 🙋 Have Questions?
-Let’s Talk!  
-
-**Thank You** – Your attention means a lot to us.  
-Let’s work together to make learning smarter, faster, and more engaging.
