@@ -1,4 +1,15 @@
 /* Animated Background */
+:root {
+    color-scheme: dark;
+}
+
+html,
+body,
+.stApp {
+    background: #091023 !important;
+    color: white !important;
+}
+
 .bg-animation {
     position: fixed;
     top: 0;
