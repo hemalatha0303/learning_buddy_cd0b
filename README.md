@@ -1,7 +1,8 @@
 # Learning Buddy – AI Powered Learning Platform
 
 **Personalized Learning. Instant Quizzes. Smarter Progress.**  
-Website: https://learningbuddycd0b-fjammryuykyruav8er3rhv.streamlit.app/
+**Website**: https://learningbuddycd0b-fjammryuykyruav8er3rhv.streamlit.app/
+
 **Live Demo** :[Learning_Buddy](https://drive.google.com/file/d/1I8OXy123lR1p8mFjeSIWvDjH4mQrS6tR/view?usp=sharing)
 
 ---
